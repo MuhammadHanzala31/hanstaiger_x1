@@ -1,26 +1,148 @@
 @import "tailwindcss";
 
+/*
+ * Hanstaiger design tokens — extracted from Figma (get_variable_defs).
+ * Brand font is Helvetica Neue. Money is EUR, formatted elsewhere.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --grey-900: #111213;
+  --grey-800: #303236;
+  --grey-700: #4f5257;
+  --grey-500: #83868e;
+  --grey-400: #989ba2;
+  --grey-300: #aeb0b5;
+  --grey-200: #c5c7cb;
+  --grey-100: #dfe0e3;
+  --grey-50: #f4f4f5;
+  --white: #ffffff;
+  --orange-400: #f37021;
+  --orange-500: #d5570c;
+  --orange-700: #742f06;
+  --obsession-red-400: #ff5029;
+  --brown-50: #f3f0ed;
+
+  --font-brand: "Helvetica Neue", Helvetica, "Inter", Arial, sans-serif;
 }
 
+/* Expose tokens to Tailwind v4 utilities (bg-grey-900, text-orange-400, etc.) */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-grey-900: var(--grey-900);
+  --color-grey-800: var(--grey-800);
+  --color-grey-700: var(--grey-700);
+  --color-grey-500: var(--grey-500);
+  --color-grey-400: var(--grey-400);
+  --color-grey-300: var(--grey-300);
+  --color-grey-200: var(--grey-200);
+  --color-grey-100: var(--grey-100);
+  --color-grey-50: var(--grey-50);
+  --color-white: var(--white);
+  --color-orange-400: var(--orange-400);
+  --color-orange-500: var(--orange-500);
+  --color-orange-700: var(--orange-700);
+  --color-obsession-red: var(--obsession-red-400);
+  --color-brown-50: var(--brown-50);
+  --font-brand: var(--font-brand);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  height: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--grey-900);
+  color: var(--white);
+  font-family: var(--font-brand);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ---- Type scale (exact Figma sizes / line-heights / weights / tracking) ---- */
+.t-title3 {
+  font-size: 56px;
+  line-height: 68px;
+  font-weight: 300;
+  letter-spacing: -0.4px;
+}
+.t-h1 {
+  font-size: 56px;
+  line-height: 64px;
+  font-weight: 400;
+}
+.t-h3 {
+  font-size: 40px;
+  line-height: 44px;
+  font-weight: 400;
+}
+.t-h6 {
+  font-size: 20px;
+  line-height: 24px;
+  font-weight: 400;
+}
+.t-body1 {
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 400;
+}
+.t-body2 {
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 400;
+}
+.t-body3 {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+}
+.t-body4 {
+  font-size: 13px;
+  line-height: 17px;
+  font-weight: 400;
+}
+.t-label1 {
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 400;
+  letter-spacing: 0.2px;
+}
+.t-button1 {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+  letter-spacing: 0.2px;
+}
+.t-button2 {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 400;
+  letter-spacing: 0.2px;
+}
+.t-caption1 {
+  font-size: 12px;
+  line-height: 12px;
+  font-weight: 500;
+  letter-spacing: 0.4px;
+}
+.t-caption3 {
+  font-size: 10px;
+  line-height: 15px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
+/* Uppercase tracked section label seen throughout the flow */
+.eyebrow {
+  text-transform: uppercase;
+  font-size: 12px;
+  line-height: 12px;
+  font-weight: 500;
+  letter-spacing: 0.8px;
+  color: var(--grey-400);
+}
+
+/* Frosted glass panel (Figma Bg-Blur-2, radius 60) */
+.frost {
+  background: rgba(17, 18, 19, 0.55);
+  backdrop-filter: blur(60px);
+  -webkit-backdrop-filter: blur(60px);
 }
