@@ -13,7 +13,7 @@ export function GuestStepper({
   max: number;
   onChange: (n: number) => Promise<void>;
 }) {
-  const [pending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
   const [optimistic, setOptimistic] = useState(value);
 
   const set = (n: number) => {
@@ -26,22 +26,16 @@ export function GuestStepper({
   };
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex items-center justify-between rounded-md border border-white/15 bg-white/5 px-3 py-2">
-        <StepButton label="Decrease guests" disabled={optimistic <= min} onClick={() => set(optimistic - 1)}>
-          –
-        </StepButton>
-        <span className="t-h6 tabular-nums text-white" aria-live="polite">
-          {optimistic}
-        </span>
-        <StepButton label="Increase guests" disabled={optimistic >= max} onClick={() => set(optimistic + 1)}>
-          +
-        </StepButton>
-      </div>
-      <p className="t-caption3 text-grey-500">
-        Includes {min} guests · up to {max}
-        {pending ? " · updating…" : ""}
-      </p>
+    <div className="flex h-12 items-center gap-6 rounded-[2px] bg-grey-900 px-4">
+      <StepButton label="Decrease guests" disabled={optimistic <= min} onClick={() => set(optimistic - 1)}>
+        –
+      </StepButton>
+      <span className="t-body3 w-6 text-center tabular-nums text-white" aria-live="polite">
+        {optimistic}
+      </span>
+      <StepButton label="Increase guests" disabled={optimistic >= max} onClick={() => set(optimistic + 1)}>
+        +
+      </StepButton>
     </div>
   );
 }
