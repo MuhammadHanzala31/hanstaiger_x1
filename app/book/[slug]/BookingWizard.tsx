@@ -10,6 +10,7 @@ import { ServicePicker } from "@/components/booking/ServicePicker";
 import { DetailsForm } from "@/components/booking/DetailsForm";
 import { setDates, setGuests, setServices } from "@/lib/booking/draft-actions";
 import { createCheckoutSession } from "@/lib/booking/checkout";
+import { formatEUR } from "@/lib/money";
 import type {
   DraftState,
   ServiceWithOptions,
@@ -19,34 +20,39 @@ import type {
 } from "@/lib/booking/types";
 import type { SelectedOption } from "@/lib/types";
 
-const STEP_META: Record<WizardStep, { eyebrow: string; title: string; description: string; info: string }> = {
+const STEP_META: Record<WizardStep, { title: string; subtitle: string; info: string }> = {
   dates: {
-    eyebrow: "Select your dates",
     title: "Select your dates",
-    description: "Confirm your departure and return dates to see your total.",
-    info: "We'll hold these dates while you complete your booking. Blocked days are unavailable.",
+    subtitle: "Confirm your departure and return dates to see your total",
+    info: "We will block the X1 on these dates for 30 min",
   },
   guests: {
-    eyebrow: "Choose your guests",
     title: "Choose your guests",
-    description: "Share who will join your experience. Extra guests add to the total.",
-    info: "Includes the base group; each guest beyond that adds an extra cost, up to the maximum.",
+    subtitle: "Includes the base group, with an extra cost per guest",
+    info: "Each guest beyond the included group adds to your total, up to the maximum",
   },
   services: {
-    eyebrow: "Enhance your experience",
     title: "Enhance your experience",
-    description: "Add tailored services for your destination and experience.",
-    info: "You can skip this step and customize later with your concierge.",
+    subtitle: "Add tailored services for your destination and experience",
+    info: "You can skip this step and customize later with your concierge",
   },
   details: {
-    eyebrow: "Lock in your reservation",
     title: "Lock in your reservation",
-    description: "Enter your details and secure your charter with a deposit.",
-    info: "In the next step you'll pay a deposit to secure your reservation.",
+    subtitle: "Enter your details and secure your charter with a deposit",
+    info: "In the next step you'll pay a deposit to secure your reservation",
   },
 };
 
 const ORDER: WizardStep[] = ["dates", "guests", "services", "details"];
+
+function pillDate(iso: string): string {
+  return new Date(iso + "T00:00:00").toLocaleDateString("en-GB", {
+    weekday: "short",
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
 
 export function BookingWizard({
   yacht,
@@ -62,15 +68,12 @@ export function BookingWizard({
   const [phase, setPhase] = useState<"intro" | "wizard">("intro");
   const [step, setStep] = useState<WizardStep>("dates");
   const [draft, setDraft] = useState<DraftState>(initialDraft);
+  const [calOpen, setCalOpen] = useState(false);
 
   const meta = STEP_META[step];
   const next = () => {
     const i = ORDER.indexOf(step);
     if (i < ORDER.length - 1) setStep(ORDER[i + 1]);
-  };
-  const back = () => {
-    const i = ORDER.indexOf(step);
-    if (i > 0) setStep(ORDER[i - 1]);
   };
 
   const handleDates = async (start: string, end: string) => {
@@ -98,90 +101,119 @@ export function BookingWizard({
     return "Something went wrong starting checkout. Please try again.";
   };
 
-  const heroStyle = yacht.heroImage
-    ? { backgroundImage: `url(${yacht.heroImage})` }
-    : undefined;
+  const hasDates = Boolean(draft.startDate && draft.endDate);
 
   return (
-    <div
-      className="relative flex min-h-screen flex-col bg-grey-900 bg-cover bg-center"
-      style={heroStyle}
-    >
-      {/* atmospheric overlay over the hero photo */}
-      <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-grey-900/70 via-grey-900/40 to-grey-900/90" />
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-grey-900">
+      {yacht.heroImage && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={yacht.heroImage}
+          alt=""
+          className={`pointer-events-none absolute inset-0 size-full object-cover ${
+            phase === "wizard" ? "scale-110 blur-[14px]" : ""
+          }`}
+        />
+      )}
+      <div
+        className={`pointer-events-none absolute inset-0 ${
+          phase === "wizard" ? "bg-grey-900/65" : "bg-grey-900/40"
+        }`}
+      />
       {!yacht.heroImage && (
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_80%_at_70%_-10%,#2b3b52_0%,#111213_60%)]" />
       )}
 
       <div className="relative z-10 flex min-h-screen flex-col">
-        {/* top bar */}
-        <header className="flex items-center justify-between px-8 py-6 md:px-20">
-          <span className="t-caption1 uppercase tracking-[0.3em] text-white">Hanstaiger</span>
-          <Link
-            href="/"
-            aria-label="Close"
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 text-white transition-colors hover:bg-white/10"
-          >
-            ✕
-          </Link>
-        </header>
-
         {phase === "intro" ? (
-          <IntroCarousel onStart={() => setPhase("wizard")} />
+          <>
+            <header className="flex items-center justify-between px-8 py-6 md:px-20">
+              <span className="t-caption1 uppercase tracking-[0.4em] text-white">Hanstaiger</span>
+              <Link href="/" aria-label="Close" className="frost flex size-9 items-center justify-center rounded-[2px] text-white hover:bg-white/15">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+                  <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+                </svg>
+              </Link>
+            </header>
+            <IntroCarousel onStart={() => setPhase("wizard")} />
+          </>
         ) : (
           <WizardChrome
             yacht={yacht}
             draft={draft}
             step={step}
             onStep={setStep}
-            eyebrow={meta.eyebrow}
             title={meta.title}
-            description={meta.description}
+            subtitle={meta.subtitle}
             info={meta.info}
           >
             {step === "dates" && (
-              <div className="flex flex-col gap-4">
-                <Calendar
-                  value={{ start: draft.startDate, end: draft.endDate }}
-                  blocked={blocked}
-                  seasonStart={yacht.seasonStart}
-                  seasonEnd={yacht.seasonEnd}
-                  onSelect={handleDates}
-                />
-                <StepNav
-                  onNext={next}
-                  nextDisabled={!draft.startDate || !draft.endDate}
-                />
+              <div className="relative flex flex-col items-center gap-2">
+                {calOpen && (
+                  <div className="absolute bottom-full left-1/2 z-20 mb-3 w-[320px] -translate-x-1/2">
+                    <Calendar
+                      value={{ start: draft.startDate, end: draft.endDate }}
+                      blocked={blocked}
+                      seasonStart={yacht.seasonStart}
+                      seasonEnd={yacht.seasonEnd}
+                      onSelect={async (s, e) => {
+                        const r = await handleDates(s, e);
+                        if (r.ok) setCalOpen(false);
+                        return r;
+                      }}
+                    />
+                  </div>
+                )}
+                <div className="flex items-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setCalOpen((o) => !o)}
+                    className="flex h-12 items-center gap-9 rounded-[2px] bg-grey-900 px-4 text-white"
+                  >
+                    <span className="t-body3">{draft.startDate ? pillDate(draft.startDate) : "Departure"}</span>
+                    <span aria-hidden>→</span>
+                    <span className="t-body3">{draft.endDate ? pillDate(draft.endDate) : "Return"}</span>
+                  </button>
+                  <SecondaryButton onClick={next} disabled={!hasDates}>Next</SecondaryButton>
+                </div>
               </div>
             )}
 
             {step === "guests" && (
-              <div className="flex flex-col gap-4">
+              <div className="flex items-end gap-2">
                 <GuestStepper
                   value={draft.guests}
                   min={yacht.includedGuests}
                   max={yacht.maxGuests}
                   onChange={handleGuests}
                 />
-                <StepNav onBack={back} onNext={next} />
+                <SecondaryButton onClick={next}>Next</SecondaryButton>
               </div>
             )}
 
             {step === "services" && (
-              <div className="flex flex-col gap-4">
+              <div className="flex w-[360px] max-w-[90vw] flex-col items-stretch gap-3">
                 <ServicePicker
                   services={services}
                   selected={draft.selectedOptions}
                   onChange={handleServices}
                 />
-                <StepNav onBack={back} onNext={next} nextLabel="Continue" />
+                <button
+                  type="button"
+                  onClick={next}
+                  className="t-button1 rounded-[2px] bg-orange-400 px-6 py-3 text-white transition-colors hover:bg-orange-500"
+                >
+                  Proceed to checkout
+                </button>
               </div>
             )}
 
             {step === "details" && (
-              <div className="flex flex-col gap-4">
+              <div className="w-[360px] max-w-[90vw]">
                 <DetailsForm deposit={draft.deposit} onProceed={handleProceed} />
-                <StepNav onBack={back} />
+                <p className="t-caption3 mt-3 text-center uppercase text-grey-300">
+                  Deposit due · {formatEUR(draft.deposit)}
+                </p>
               </div>
             )}
           </WizardChrome>
@@ -191,38 +223,23 @@ export function BookingWizard({
   );
 }
 
-function StepNav({
-  onBack,
-  onNext,
-  nextDisabled,
-  nextLabel = "Next",
+function SecondaryButton({
+  children,
+  onClick,
+  disabled,
 }: {
-  onBack?: () => void;
-  onNext?: () => void;
-  nextDisabled?: boolean;
-  nextLabel?: string;
+  children: React.ReactNode;
+  onClick: () => void;
+  disabled?: boolean;
 }) {
   return (
-    <div className="flex items-center gap-3">
-      {onBack && (
-        <button
-          type="button"
-          onClick={onBack}
-          className="t-button2 rounded-sm border border-white/20 px-4 py-2 text-grey-200 transition-colors hover:bg-white/10"
-        >
-          Back
-        </button>
-      )}
-      {onNext && (
-        <button
-          type="button"
-          onClick={onNext}
-          disabled={nextDisabled}
-          className="t-button1 rounded-sm bg-white px-6 py-2 text-grey-900 transition-colors hover:bg-grey-100 disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          {nextLabel}
-        </button>
-      )}
-    </div>
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="t-button1 flex h-12 items-center justify-center rounded-[2px] border border-white px-6 text-white transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+    >
+      {children}
+    </button>
   );
 }
