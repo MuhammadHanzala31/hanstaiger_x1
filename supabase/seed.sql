@@ -10,22 +10,25 @@ values (
 
 with svc as (
   insert into services (name, category, description, sort_order) values
-    ('Private chef', 'dining', 'Tailored onboard dining', 0),
+    ('Private Chef', 'dining', 'Tailored onboard dining', 0),
     ('Jetskis', 'water', 'High-performance jetskis', 1),
     ('Spa & Massage', 'wellness', 'Onboard wellness', 2),
-    ('Water Toys', 'water', 'Seabobs, paddleboards, and more', 3)
+    ('Water Toys', 'water', 'Seabobs, paddleboards, and more', 3),
+    ('DJ Station', 'entertainment', 'Onboard DJ and sound system', 4)
   returning id, name
 )
 insert into service_options (service_id, name, price, sort_order)
 select svc.id, opt.name, opt.price, opt.ord from svc, lateral (
   values
-    ('Private chef','Breakfast', 50000, 0),
-    ('Private chef','Lunch', 80000, 1),
-    ('Private chef','Dinner', 120000, 2),
+    ('Private Chef','Breakfast', 50000, 0),
+    ('Private Chef','Lunch', 80000, 1),
+    ('Private Chef','Dinner', 120000, 2),
     ('Jetskis','Half day', 60000, 0),
     ('Jetskis','Full day', 100000, 1),
     ('Spa & Massage','Single session', 40000, 0),
-    ('Water Toys','Full package', 70000, 0)
+    ('Water Toys','Full package', 70000, 0),
+    ('DJ Station','Evening set', 90000, 0),
+    ('DJ Station','Full day', 160000, 1)
 ) as opt(svc_name, name, price, ord)
 where opt.svc_name = svc.name;
 
