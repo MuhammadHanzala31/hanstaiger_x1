@@ -1,8 +1,9 @@
 -- Applied to the hosted project via Supabase MCP on 2026-06-02. Kept here for source control.
-insert into yachts (slug, name, tagline, base_price, included_guests, extra_guest_price,
+insert into yachts (slug, name, tagline, hero_image, base_price, included_guests, extra_guest_price,
   max_guests, min_nights, max_nights, deposit_mode, deposit_value, season_start, season_end, sort_order)
 values (
   'x1', 'Hanstaiger X1', 'Book the X1 experience',
+  'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=2400&q=80',
   2000000, 4, 500000, 12, 3, 14, 'percent', 20,
   '2026-05-01', '2026-10-31', 0
 );
