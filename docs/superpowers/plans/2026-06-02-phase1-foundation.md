@@ -10,6 +10,8 @@
 
 **Overall phasing (context):** Phase 1 Foundation → Phase 2 Public booking flow → Phase 3 Payments (Stripe + email) → Phase 4 Admin panel. This document covers Phase 1 only.
 
+> **EXECUTION NOTE (2026-06-02): Hosted Supabase, no Docker.** The user's laptop runs Docker poorly, so we use a **hosted free-tier Supabase project** instead of the local stack. Project: `hanstaiger-booking`, ref `ynemvghxsimezmsdewkh`, region `ap-southeast-1`, URL `https://ynemvghxsimezmsdewkh.supabase.co`. Tasks 3–5 (schema, RLS, seed) were applied to the remote DB via the Supabase MCP and are **DONE**. Wherever this plan says `supabase start` / `supabase db reset`, that no longer applies — there is no local Docker stack. Migration SQL is still kept in `supabase/migrations/` for source control.
+
 ---
 
 ## File Structure (Phase 1)
