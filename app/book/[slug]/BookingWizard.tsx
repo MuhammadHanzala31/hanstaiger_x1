@@ -74,13 +74,13 @@ export function BookingWizard({
   };
 
   const handleDates = async (start: string, end: string) => {
-    const res = await setDates(start, end);
+    const res = await setDates(yacht.id, start, end);
     if (res.ok) setDraft(res.state);
     return { ok: res.ok, reason: res.ok ? undefined : res.reason };
   };
-  const handleGuests = async (n: number) => setDraft(await setGuests(n));
+  const handleGuests = async (n: number) => setDraft(await setGuests(yacht.id, n));
   const handleServices = async (opts: SelectedOption[]) =>
-    setDraft(await setServices(opts));
+    setDraft(await setServices(yacht.id, opts));
 
   const handleProceed = async (customer: {
     name: string;

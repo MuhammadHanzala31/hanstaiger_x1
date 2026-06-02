@@ -4,7 +4,7 @@ import {
   getServicesForYacht,
   getAvailability,
 } from "@/lib/booking/queries";
-import { ensureDraft } from "@/lib/booking/draft-actions";
+import { initialDraftState } from "@/lib/booking/initial-draft";
 import { BookingWizard } from "./BookingWizard";
 
 export default async function BookPage({
@@ -16,10 +16,9 @@ export default async function BookPage({
   const yacht = await getYachtBySlug(slug);
   if (!yacht) notFound();
 
-  const [services, blocked, draft] = await Promise.all([
+  const [services, blocked] = await Promise.all([
     getServicesForYacht(yacht.id),
     getAvailability(yacht.id),
-    ensureDraft(yacht.id),
   ]);
 
   return (
@@ -27,7 +26,7 @@ export default async function BookPage({
       yacht={yacht}
       services={services}
       blocked={blocked}
-      initialDraft={draft}
+      initialDraft={initialDraftState(yacht)}
     />
   );
 }

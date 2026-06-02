@@ -27,7 +27,37 @@ function rowToState(row: DraftRow): DraftState {
   };
 }
 
-/** Reprice from current row + yacht and persist; returns the fresh state. */
+/**
+ * Return the current draft row for this yacht, creating one (and setting the
+ * cookie) if none exists. Safe to call from a Server Action — cookie writes
+ * are allowed here (unlike in a Server Component render).
+ */
+async function ensureDraftRow(client: ServiceClient, yachtId: string): Promise<DraftRow> {
+  const existingId = await getDraftId();
+  if (existingId) {
+    const row = await loadDraftRow(client, existingId);
+    if (row && row.yacht_id === yachtId) return row;
+  }
+  const yacht = await loadYachtById(client, yachtId);
+  if (!yacht) throw new Error("Yacht not found");
+  const { total, deposit } = repriceDraft(yacht, yacht.includedGuests, []);
+  const { data } = await client
+    .from("booking_drafts")
+    .insert({
+      yacht_id: yachtId,
+      guests: yacht.includedGuests,
+      selected_options: [],
+      computed_total: total,
+      computed_deposit: deposit,
+    })
+    .select("*")
+    .single();
+  const row = data as DraftRow;
+  await setDraftId(row.id);
+  return row;
+}
+
+/** Reprice from a row + yacht and persist; returns the fresh state. */
 async function repersist(client: ServiceClient, row: DraftRow): Promise<DraftState> {
   const yacht = await loadYachtById(client, row.yacht_id);
   if (!yacht) throw new Error("Yacht not found for draft");
@@ -48,44 +78,17 @@ async function repersist(client: ServiceClient, row: DraftRow): Promise<DraftSta
   return rowToState(data as DraftRow);
 }
 
-/** Reuse the cookie's draft if still valid; otherwise create a new one. */
-export async function ensureDraft(yachtId: string): Promise<DraftState> {
-  const client = createServiceClient();
-  const existingId = await getDraftId();
-  if (existingId) {
-    const row = await loadDraftRow(client, existingId);
-    if (row && row.yacht_id === yachtId) return rowToState(row);
-  }
-
-  const yacht = await loadYachtById(client, yachtId);
-  if (!yacht) throw new Error("Yacht not found");
-  const { total, deposit } = repriceDraft(yacht, yacht.includedGuests, []);
-  const { data } = await client
-    .from("booking_drafts")
-    .insert({
-      yacht_id: yachtId,
-      guests: yacht.includedGuests,
-      selected_options: [],
-      computed_total: total,
-      computed_deposit: deposit,
-    })
-    .select("*")
-    .single();
-  const row = data as DraftRow;
-  await setDraftId(row.id);
-  return rowToState(row);
-}
-
 export type DatesResult =
   | { ok: true; state: DraftState }
   | { ok: false; reason: string };
 
-export async function setDates(start: string, end: string): Promise<DatesResult> {
+export async function setDates(
+  yachtId: string,
+  start: string,
+  end: string,
+): Promise<DatesResult> {
   const client = createServiceClient();
-  const id = await getDraftId();
-  if (!id) return { ok: false, reason: "no_draft" };
-  const row = await loadDraftRow(client, id);
-  if (!row) return { ok: false, reason: "no_draft" };
+  const row = await ensureDraftRow(client, yachtId);
 
   const yacht = await loadYachtById(client, row.yacht_id);
   if (!yacht) return { ok: false, reason: "no_draft" };
@@ -108,23 +111,23 @@ export async function setDates(start: string, end: string): Promise<DatesResult>
   return { ok: true, state };
 }
 
-export async function setGuests(guests: number): Promise<DraftState> {
+export async function setGuests(yachtId: string, guests: number): Promise<DraftState> {
   const client = createServiceClient();
-  const id = await getDraftId();
-  if (!id) throw new Error("no_draft");
-  const row = await loadDraftRow(client, id);
-  if (!row) throw new Error("no_draft");
+  const row = await ensureDraftRow(client, yachtId);
   const yacht = await loadYachtById(client, row.yacht_id);
-  if (!yacht) throw new Error("no_draft");
-  const clamped = Math.min(yacht.maxGuests, Math.max(yacht.includedGuests, Math.round(guests)));
+  if (!yacht) throw new Error("no_yacht");
+  const clamped = Math.min(
+    yacht.maxGuests,
+    Math.max(yacht.includedGuests, Math.round(guests)),
+  );
   return repersist(client, { ...row, guests: clamped });
 }
 
-export async function setServices(options: SelectedOption[]): Promise<DraftState> {
+export async function setServices(
+  yachtId: string,
+  options: SelectedOption[],
+): Promise<DraftState> {
   const client = createServiceClient();
-  const id = await getDraftId();
-  if (!id) throw new Error("no_draft");
-  const row = await loadDraftRow(client, id);
-  if (!row) throw new Error("no_draft");
+  const row = await ensureDraftRow(client, yachtId);
   return repersist(client, { ...row, selected_options: options });
 }
