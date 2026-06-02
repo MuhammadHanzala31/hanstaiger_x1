@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { IntroCarousel } from "@/components/booking/IntroCarousel";
 import { WizardChrome } from "@/components/booking/WizardChrome";
@@ -10,6 +9,7 @@ import { GuestStepper } from "@/components/booking/GuestStepper";
 import { ServicePicker } from "@/components/booking/ServicePicker";
 import { DetailsForm } from "@/components/booking/DetailsForm";
 import { setDates, setGuests, setServices } from "@/lib/booking/draft-actions";
+import { createCheckoutSession } from "@/lib/booking/checkout";
 import type {
   DraftState,
   ServiceWithOptions,
@@ -59,7 +59,6 @@ export function BookingWizard({
   blocked: BlockedRange[];
   initialDraft: DraftState;
 }) {
-  const router = useRouter();
   const [phase, setPhase] = useState<"intro" | "wizard">("intro");
   const [step, setStep] = useState<WizardStep>("dates");
   const [draft, setDraft] = useState<DraftState>(initialDraft);
@@ -83,6 +82,22 @@ export function BookingWizard({
   const handleServices = async (opts: SelectedOption[]) =>
     setDraft(await setServices(opts));
 
+  const handleProceed = async (customer: {
+    name: string;
+    email: string;
+    phone: string;
+  }): Promise<string | void> => {
+    const res = await createCheckoutSession(customer);
+    if ("url" in res) {
+      window.location.assign(res.url);
+      return;
+    }
+    if (res.error === "incomplete") return "Please select your dates first.";
+    if (["unavailable", "out_of_season", "min_nights", "max_nights"].includes(res.error))
+      return "Those dates are no longer available — please choose again.";
+    return "Something went wrong starting checkout. Please try again.";
+  };
+
   const heroStyle = yacht.heroImage
     ? { backgroundImage: `url(${yacht.heroImage})` }
     : undefined;
@@ -93,7 +108,7 @@ export function BookingWizard({
       style={heroStyle}
     >
       {/* atmospheric overlay over the hero photo */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-grey-900/70 via-grey-900/40 to-grey-900/90" />
+      <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-grey-900/70 via-grey-900/40 to-grey-900/90" />
       {!yacht.heroImage && (
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_80%_at_70%_-10%,#2b3b52_0%,#111213_60%)]" />
       )}
@@ -165,10 +180,7 @@ export function BookingWizard({
 
             {step === "details" && (
               <div className="flex flex-col gap-4">
-                <DetailsForm
-                  deposit={draft.deposit}
-                  onProceed={() => router.push(`/book/${yacht.slug}/confirmation`)}
-                />
+                <DetailsForm deposit={draft.deposit} onProceed={handleProceed} />
                 <StepNav onBack={back} />
               </div>
             )}

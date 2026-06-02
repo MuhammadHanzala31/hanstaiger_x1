@@ -1,8 +1,17 @@
 import "server-only";
 import Stripe from "stripe";
 
-/** Server-side Stripe client. Secret key is server-only (never bundled). */
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "", {
-  // Pin to the SDK's bundled API version; override here if the dashboard differs.
-  typescript: true,
-});
+let _stripe: Stripe | null = null;
+
+/**
+ * Lazily-constructed server-side Stripe client. Lazy so the app can build and
+ * boot without `STRIPE_SECRET_KEY` set; the error only surfaces when checkout
+ * or the webhook is actually exercised.
+ */
+export function getStripe(): Stripe {
+  if (_stripe) return _stripe;
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key) throw new Error("STRIPE_SECRET_KEY is not set");
+  _stripe = new Stripe(key, { typescript: true });
+  return _stripe;
+}

@@ -2,7 +2,7 @@
 
 import { headers } from "next/headers";
 import { createServiceClient } from "@/lib/supabase/service";
-import { stripe } from "@/lib/stripe";
+import { getStripe } from "@/lib/stripe";
 import { validateRange } from "@/lib/availability";
 import { loadYachtById, loadDraftRow, loadBlockedRanges } from "./db";
 import { getDraftId } from "./draft-cookie";
@@ -76,7 +76,7 @@ export async function createCheckoutSession(customer: Customer): Promise<Checkou
   if (error || !booking) return { error: "booking_failed" };
 
   const base = await baseUrl();
-  const session = await stripe.checkout.sessions.create({
+  const session = await getStripe().checkout.sessions.create({
     mode: "payment",
     customer_email: customer.email,
     line_items: [

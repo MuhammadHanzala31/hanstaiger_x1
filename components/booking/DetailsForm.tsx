@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { formatEUR } from "@/lib/money";
 
 export function DetailsForm({
@@ -8,11 +8,18 @@ export function DetailsForm({
   onProceed,
 }: {
   deposit: number;
-  onProceed: (customer: { name: string; email: string; phone: string }) => void;
+  /** Returns an error message to display, or void on success (redirect happens). */
+  onProceed: (customer: {
+    name: string;
+    email: string;
+    phone: string;
+  }) => Promise<string | void>;
 }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
 
   const valid = name.trim().length > 1 && /\S+@\S+\.\S+/.test(email);
 
@@ -20,7 +27,12 @@ export function DetailsForm({
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        if (valid) onProceed({ name, email, phone });
+        if (!valid || pending) return;
+        setError(null);
+        startTransition(async () => {
+          const msg = await onProceed({ name, email, phone });
+          if (msg) setError(msg);
+        });
       }}
       className="frost flex flex-col gap-3 rounded-md border border-white/10 p-4"
     >
@@ -33,12 +45,14 @@ export function DetailsForm({
         per booking conditions.
       </p>
 
+      {error && <p className="t-caption3 text-obsession-red">{error}</p>}
+
       <button
         type="submit"
-        disabled={!valid}
+        disabled={!valid || pending}
         className="t-button1 mt-1 rounded-sm bg-orange-400 px-6 py-3 text-white transition-colors hover:bg-orange-500 disabled:cursor-not-allowed disabled:opacity-40"
       >
-        Proceed to checkout · {formatEUR(deposit)}
+        {pending ? "Redirecting…" : `Proceed to checkout · ${formatEUR(deposit)}`}
       </button>
     </form>
   );
