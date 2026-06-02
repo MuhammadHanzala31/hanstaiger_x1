@@ -140,6 +140,24 @@ body {
   color: var(--grey-400);
 }
 
+/* Admin form input */
+.admin-input {
+  border-radius: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 8px 12px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--white);
+  outline: none;
+}
+.admin-input:focus {
+  border-color: var(--orange-400);
+}
+.admin-input::placeholder {
+  color: var(--grey-500);
+}
+
 /* Frosted glass panel (Figma Bg-Blur-2, radius 60) */
 .frost {
   background: rgba(17, 18, 19, 0.55);
