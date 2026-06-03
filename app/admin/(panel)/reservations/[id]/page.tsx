@@ -3,6 +3,8 @@ import Link from "next/link";
 import { getBooking } from "@/lib/admin/queries";
 import { formatEUR } from "@/lib/money";
 import { StatusBadge } from "@/components/admin/StatusBadge";
+import { googleCalendarUrl } from "@/lib/calendar/ics";
+import { bookingToEvent } from "@/lib/calendar/booking-event";
 import { cancelBooking } from "../actions";
 
 interface LineItem {
@@ -21,6 +23,18 @@ export default async function ReservationDetail({
 
   const lineItems = (booking.line_items ?? []) as LineItem[];
   const cancel = cancelBooking.bind(null, id);
+  const yachtName =
+    (booking.yachts as unknown as { name: string } | null)?.name ?? "Hanstaiger";
+  const gcal = googleCalendarUrl(
+    bookingToEvent({
+      id: booking.id,
+      start_date: booking.start_date,
+      end_date: booking.end_date,
+      guests: booking.guests,
+      customer_name: booking.customer_name,
+      yachtName,
+    }),
+  );
 
   return (
     <div className="max-w-2xl">
@@ -57,6 +71,23 @@ export default async function ReservationDetail({
           <span className="t-body3 text-grey-300">Deposit</span>
           <span className="t-body3 text-orange-400">{formatEUR(booking.deposit)}</span>
         </div>
+      </div>
+
+      <div className="mb-6 flex flex-wrap gap-2">
+        <a
+          href={gcal}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="t-button2 rounded-sm border border-white/20 px-4 py-2 text-grey-200 transition-colors hover:bg-white/10"
+        >
+          Add to Google Calendar
+        </a>
+        <a
+          href={`/api/calendar/booking/${booking.id}`}
+          className="t-button2 rounded-sm border border-white/20 px-4 py-2 text-grey-200 transition-colors hover:bg-white/10"
+        >
+          Download .ics
+        </a>
       </div>
 
       {booking.status !== "cancelled" && (
