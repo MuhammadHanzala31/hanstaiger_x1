@@ -30,7 +30,11 @@ export function Calendar({
   onSelect: (start: string, end: string) => Promise<{ ok: boolean; reason?: string }>;
 }) {
   const today = iso(new Date());
-  const initialMonth = value.start ? parse(value.start) : parse(seasonStart ?? today);
+  // Open on the first month that actually has selectable days: the later of
+  // today and the season start (never a fully-past month).
+  const firstSelectable =
+    seasonStart && seasonStart > today ? seasonStart : today;
+  const initialMonth = value.start ? parse(value.start) : parse(firstSelectable);
   const [month, setMonth] = useState(
     new Date(Date.UTC(initialMonth.getUTCFullYear(), initialMonth.getUTCMonth(), 1)),
   );

@@ -26,7 +26,7 @@ export function GuestStepper({
   };
 
   return (
-    <div className="flex h-12 items-center gap-6 rounded-[2px] bg-grey-900 px-4">
+    <div className="flex h-12 w-full items-center justify-between gap-6 rounded-[2px] bg-grey-900 px-4 md:w-auto md:justify-start">
       <StepButton label="Decrease guests" disabled={optimistic <= min} onClick={() => set(optimistic - 1)}>
         –
       </StepButton>
