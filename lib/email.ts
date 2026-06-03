@@ -2,6 +2,8 @@ import "server-only";
 import { Resend } from "resend";
 import { formatEUR } from "@/lib/money";
 import type { ConfirmedBooking } from "@/lib/booking/booking-confirm";
+import { googleCalendarUrl } from "@/lib/calendar/ics";
+import { bookingToEvent } from "@/lib/calendar/booking-event";
 
 const FROM = "Hanstaiger <onboarding@resend.dev>"; // replace with verified domain in prod
 
@@ -28,6 +30,20 @@ export async function sendClientConfirmation(b: ConfirmedBooking): Promise<void>
     console.warn("[email] RESEND_API_KEY unset — skipping client confirmation");
     return;
   }
+  const event = bookingToEvent({
+    id: b.id,
+    start_date: b.start_date,
+    end_date: b.end_date,
+    guests: b.guests,
+    customer_name: b.customer_name,
+    yachtName: "Hanstaiger X1",
+  });
+  const gcal = googleCalendarUrl(event);
+  const base = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
+  const icsLink = base
+    ? `&nbsp;·&nbsp;<a href="${base}/api/calendar/booking/${b.id}">Download .ics</a>`
+    : "";
+
   try {
     await resend.emails.send({
       from: FROM,
@@ -38,6 +54,7 @@ export async function sendClientConfirmation(b: ConfirmedBooking): Promise<void>
           <h2 style="font-weight:400">Reservation confirmed</h2>
           <p>Dear ${b.customer_name}, your charter is secured. The balance is due on board.</p>
           ${summary(b)}
+          <p style="margin-top:16px"><a href="${gcal}">Add to Google Calendar</a>${icsLink}</p>
           <p style="color:#83868e;font-size:12px">Hanstaiger · ${b.id}</p>
         </div>`,
     });

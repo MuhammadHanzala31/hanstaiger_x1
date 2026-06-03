@@ -2,6 +2,8 @@ import Link from "next/link";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getDraftId } from "@/lib/booking/draft-cookie";
 import { formatEUR } from "@/lib/money";
+import { googleCalendarUrl } from "@/lib/calendar/ics";
+import { bookingToEvent } from "@/lib/calendar/booking-event";
 
 export default async function ConfirmationPage({
   searchParams,
@@ -15,18 +17,18 @@ export default async function ConfirmationPage({
   if (sessionId) {
     const { data: booking } = await client
       .from("bookings")
-      .select("status, start_date, end_date, guests, total, deposit, customer_name")
+      .select("id, status, start_date, end_date, guests, total, deposit, customer_name, yachts(name)")
       .eq("stripe_session_id", sessionId)
       .maybeSingle();
 
     if (booking) {
       const confirmed = booking.status === "confirmed";
+      const yachtName =
+        (booking.yachts as unknown as { name: string } | null)?.name ?? "Hanstaiger";
       return (
         <Shell
           eyebrow={confirmed ? "Reservation confirmed" : "Finalizing"}
-          title={
-            confirmed ? "You're all set" : "We're confirming your payment"
-          }
+          title={confirmed ? "You're all set" : "We're confirming your payment"}
         >
           <Summary
             dates={`${booking.start_date} → ${booking.end_date}`}
@@ -35,6 +37,21 @@ export default async function ConfirmationPage({
             deposit={booking.deposit}
             depositLabel={confirmed ? "Deposit paid" : "Deposit due"}
           />
+          {confirmed && (
+            <AddToCalendar
+              googleUrl={googleCalendarUrl(
+                bookingToEvent({
+                  id: booking.id,
+                  start_date: booking.start_date,
+                  end_date: booking.end_date,
+                  guests: booking.guests,
+                  customer_name: booking.customer_name,
+                  yachtName,
+                }),
+              )}
+              icsUrl={`/api/calendar/booking/${booking.id}`}
+            />
+          )}
           <p className="t-caption3 max-w-sm text-grey-500">
             {confirmed
               ? "A confirmation email is on its way. The balance is due on board."
@@ -143,5 +160,26 @@ function Back() {
     >
       Back to start
     </Link>
+  );
+}
+
+function AddToCalendar({ googleUrl, icsUrl }: { googleUrl: string; icsUrl: string }) {
+  return (
+    <div className="flex w-full max-w-sm flex-col gap-2 sm:flex-row">
+      <a
+        href={googleUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="t-button1 flex-1 rounded-[2px] bg-orange-400 px-5 py-3 text-center text-white transition-colors hover:bg-orange-500"
+      >
+        Add to Google Calendar
+      </a>
+      <a
+        href={icsUrl}
+        className="t-button1 flex-1 rounded-[2px] border border-white/25 px-5 py-3 text-center text-white transition-colors hover:bg-white/10"
+      >
+        Download .ics
+      </a>
+    </div>
   );
 }

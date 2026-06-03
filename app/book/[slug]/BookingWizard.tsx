@@ -148,9 +148,9 @@ export function BookingWizard({
             info={meta.info}
           >
             {step === "dates" && (
-              <div className="relative flex flex-col items-center gap-2">
+              <div className="relative flex w-full flex-col items-center gap-2 md:w-auto">
                 {calOpen && (
-                  <div className="absolute bottom-full left-1/2 z-20 mb-3 w-[320px] -translate-x-1/2">
+                  <div className="absolute bottom-full left-1/2 z-20 mb-3 w-[320px] max-w-[92vw] -translate-x-1/2">
                     <Calendar
                       value={{ start: draft.startDate, end: draft.endDate }}
                       blocked={blocked}
@@ -164,11 +164,11 @@ export function BookingWizard({
                     />
                   </div>
                 )}
-                <div className="flex items-end gap-2">
+                <div className="flex w-full flex-col items-stretch gap-2 md:w-auto md:flex-row md:items-end">
                   <button
                     type="button"
                     onClick={() => setCalOpen((o) => !o)}
-                    className="flex h-12 items-center gap-9 rounded-[2px] bg-grey-900 px-4 text-white"
+                    className="flex h-12 w-full items-center justify-between gap-9 rounded-[2px] bg-grey-900 px-4 text-white md:w-auto md:justify-start"
                   >
                     <span className="t-body3">{draft.startDate ? pillDate(draft.startDate) : "Departure"}</span>
                     <span aria-hidden>→</span>
@@ -180,7 +180,7 @@ export function BookingWizard({
             )}
 
             {step === "guests" && (
-              <div className="flex items-end gap-2">
+              <div className="flex w-full flex-col items-stretch gap-2 md:w-auto md:flex-row md:items-end">
                 <GuestStepper
                   value={draft.guests}
                   min={yacht.includedGuests}
@@ -192,7 +192,7 @@ export function BookingWizard({
             )}
 
             {step === "services" && (
-              <div className="flex w-[360px] max-w-[90vw] flex-col items-stretch gap-3">
+              <div className="flex w-full flex-col items-stretch gap-3 md:w-[360px]">
                 <ServicePicker
                   services={services}
                   selected={draft.selectedOptions}
@@ -209,7 +209,7 @@ export function BookingWizard({
             )}
 
             {step === "details" && (
-              <div className="w-[360px] max-w-[90vw]">
+              <div className="w-full md:w-[360px]">
                 <DetailsForm deposit={draft.deposit} onProceed={handleProceed} />
                 <p className="t-caption3 mt-3 text-center uppercase text-grey-300">
                   Deposit due · {formatEUR(draft.deposit)}
@@ -237,7 +237,7 @@ function SecondaryButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="t-button1 flex h-12 items-center justify-center rounded-[2px] border border-white px-6 text-white transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+      className="t-button1 flex h-12 w-full items-center justify-center rounded-[2px] border border-white px-6 text-white transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40 md:w-auto"
     >
       {children}
     </button>
