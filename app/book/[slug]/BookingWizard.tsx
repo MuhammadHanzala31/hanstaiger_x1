@@ -111,7 +111,7 @@ export function BookingWizard({
           src={yacht.heroImage}
           alt=""
           className={`pointer-events-none absolute inset-0 size-full object-cover ${
-            phase === "wizard" ? "scale-110 blur-[14px]" : ""
+            phase === "wizard" ? "scale-110 blur-[14px]" : "scale-110 blur-[20px]"
           }`}
         />
       )}

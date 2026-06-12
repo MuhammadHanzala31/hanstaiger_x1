@@ -55,23 +55,15 @@ export function IntroCarousel({ onStart }: { onStart: () => void }) {
     setIndex((i) => (i + dir + SLIDES.length) % SLIDES.length);
 
   return (
-    <div className="flex flex-1 flex-col justify-between px-8 pb-10 md:px-20 md:pb-16">
+    <div className="flex flex-1 flex-col bg-blac justify-between ">
       {/* progress bar */}
-      <div className="mt-2 h-px w-full bg-white/15">
-        <div
-          className="h-px bg-white transition-[width] duration-100 ease-linear"
-          style={{ width: `${progress * 100}%` }}
-        />
-      </div>
 
-      <div className="max-w-xl">
+
+      <div className="max-w-xl flex flex-col h-[70vh] justify-between gap-4 px-20">
         <h1 className="t-title3 text-white">Book the X1 experience</h1>
-      </div>
-
-      <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
-        <div className="max-w-md">
-          <p className="eyebrow mb-3">{slide.eyebrow}</p>
-          <p className="t-body3 mb-6 text-grey-300">{slide.body}</p>
+        <div className="">
+          <p className=" text-white mb-4  text-xl">{slide.eyebrow}</p>
+          <p className="t-body3 mb-6 text-white text-xl" >{slide.body}</p>
           <button
             type="button"
             onClick={onStart}
@@ -79,6 +71,24 @@ export function IntroCarousel({ onStart }: { onStart: () => void }) {
           >
             Customize your experience
           </button>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-8 md:flex-row md:items-end px-12 py-10 md:justify-between bg-black w-full">
+
+        <div className="max-w-md flex flex-col gap-4" >
+          <div className="mt-2 h-[2px] px-8 w-full bg-white/15">
+            <div
+              className="h-px bg-orange-400 transition-[width]  duration-100 ease-linear"
+              style={{ width: `${progress * 100}%` }}
+            />
+          </div>
+
+          <p className="t-body3  text-white text-xl" >Select your dates</p>
+          <p className="eyebrow text-white text-xl" >Find the perfect moment for your X1 experience</p>
+
+
+
         </div>
 
         <div className="flex items-center gap-6">

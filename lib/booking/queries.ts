@@ -46,16 +46,59 @@ function mapYacht(row: YachtRow): Yacht {
   };
 }
 
+const YACHT_LOOKUP_ATTEMPTS = 3;
+
+function summarizeDbError(message: string): string {
+  if (message.includes("521") || message.includes("Web server is down")) {
+    return "Supabase is unreachable. Open the Supabase dashboard and restore or unpause the project.";
+  }
+  if (
+    message.includes("schema cache") ||
+    message.includes("Could not find the table")
+  ) {
+    return "Database tables are missing. Run npm run db:setup after adding DATABASE_URL to .env.";
+  }
+  if (message.includes("<!DOCTYPE") || message.length > 160) {
+    return "Database connection failed. Check your Supabase project status.";
+  }
+  return message;
+}
+
 export async function getYachtBySlug(slug: string): Promise<Yacht | null> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("yachts")
-    .select("*")
-    .eq("slug", slug)
-    .eq("is_active", true)
-    .maybeSingle();
-  if (error || !data) return null;
-  return mapYacht(data as YachtRow);
+  let lastError: { message: string } | null = null;
+
+  for (let attempt = 1; attempt <= YACHT_LOOKUP_ATTEMPTS; attempt++) {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("yachts")
+      .select("*")
+      .eq("slug", slug)
+      .eq("is_active", true)
+      .maybeSingle();
+
+    if (!error) {
+      if (!data) return null;
+      return mapYacht(data as YachtRow);
+    }
+
+    lastError = error;
+    const preview = error.message.includes("<!DOCTYPE")
+      ? "Supabase returned an HTML error page (likely 521: host down)"
+      : error.message.slice(0, 200);
+    console.error(
+      `[getYachtBySlug] attempt ${attempt}/${YACHT_LOOKUP_ATTEMPTS}:`,
+      preview,
+    );
+    if (attempt < YACHT_LOOKUP_ATTEMPTS) {
+      await new Promise((resolve) => setTimeout(resolve, 400 * attempt));
+    }
+  }
+
+  throw new Error(
+    lastError
+      ? summarizeDbError(lastError.message)
+      : "Unable to load yacht data. Please try again shortly.",
+  );
 }
 
 interface YachtServiceJoinRow {

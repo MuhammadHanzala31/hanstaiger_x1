@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test:unit": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "db:setup": "node scripts/setup-database.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",
@@ -29,6 +30,7 @@
     "@vitest/coverage-v8": "^4.1.8",
     "eslint": "^9",
     "eslint-config-next": "16.2.7",
+    "pg": "^8.21.0",
     "supabase": "^2.104.0",
     "tailwindcss": "^4",
     "typescript": "^5",
