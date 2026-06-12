@@ -59,7 +59,7 @@ export function IntroCarousel({ onStart }: { onStart: () => void }) {
       {/* progress bar */}
 
 
-      <div className="max-w-xl flex flex-col h-[70vh] justify-between gap-4 px-20">
+      <div className="max-w-xl flex flex-col h-[60vh] justify-between pb-4 gap-4 px-20">
         <h1 className="t-title3 text-white">Book the X1 experience</h1>
         <div className="">
           <p className=" text-white mb-4  text-xl">{slide.eyebrow}</p>

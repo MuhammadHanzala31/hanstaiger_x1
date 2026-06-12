@@ -34,7 +34,7 @@ export function DetailsForm({
           if (msg) setError(msg);
         });
       }}
-      className="frost flex flex-col gap-3 rounded-md border border-white/10 p-4"
+      className="frost flex flex-col gap-2 rounded-md border border-white/10 md:p-4 p-2"
     >
       <Field label="Full name" value={name} onChange={setName} type="text" required />
       <Field label="Email" value={email} onChange={setEmail} type="email" required />
@@ -79,7 +79,7 @@ function Field({
         value={value}
         required={required}
         onChange={(e) => onChange(e.target.value)}
-        className="t-body3 rounded-sm border border-white/15 bg-white/5 px-3 py-2 text-white outline-none transition-colors focus:border-orange-400"
+        className="t-body3 rounded-sm border border-white/15 bg-white/5 px-3 py-1 text-white outline-none transition-colors focus:border-orange-400"
       />
     </label>
   );

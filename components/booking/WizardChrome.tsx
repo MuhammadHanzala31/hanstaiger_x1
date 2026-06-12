@@ -122,16 +122,16 @@ export function WizardChrome({
       <div className="hidden w-full md:block">{nav}</div>
 
       {/* Body */}
-      <div className="flex flex-1 flex-col gap-10 md:flex-none md:items-center md:gap-0">
+      <div className="flex flex-1 flex-col gap-1 md:flex-none md:items-center md:gap-0">
         {/* Mobile-only nav (in flow) */}
         <div className="md:hidden">{nav}</div>
 
         {/* Heading: left H3 on mobile, centered H1 on desktop */}
-        <div className="flex flex-col items-start gap-9 text-left md:items-center md:gap-8 md:pb-[68px] md:text-center">
-          <h1 className="font-normal text-[40px] leading-[44px] text-white md:text-[56px] md:leading-[64px]">
+          <div className={`flex flex-col   ${title === 'Enhance your experience' ? "md:pl-10 pt-5 md:text-start text-center md:w-screen w-full md:gap-2 " : "text-left items-start gap-2 text-left md:items-center md:gap-2 md:pb-[68px]"}`}>
+          <h1 className={`${title === "Enhance your experience" ? " md:w-[400px] w-full font-normal text-[20px] leading-[44px] text-white md:text-[62px] md:leading-[64px]" : "font-normal text-[40px] leading-[44px] text-white md:text-[56px] md:leading-[64px]"}`}>
             {title}
           </h1>
-          <p className="t-caption1 max-w-[257px] uppercase text-white md:max-w-none">{subtitle}</p>
+          <p className={`${title === 'Enhance your experience' ? 'md:text-lg text-[11px] max-w-[400px] uppercase text-white md:max-w-[400px]' : ''}`}>{subtitle}</p>
         </div>
 
         {/* Control */}

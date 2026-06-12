@@ -35,7 +35,7 @@ export function ServicePicker({
   };
 
   return (
-    <div className="frost rounded-md border border-white/10">
+    <div className="bg-black rounded-none border border-white/10">
       <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
         <span className="eyebrow">Select your services</span>
         <button
@@ -60,13 +60,13 @@ export function ServicePicker({
                 className="flex w-full items-center justify-between px-4 py-3 text-left"
               >
                 <span className="t-body3 text-white">{service.name}</span>
-                <span className="t-caption3 text-grey-500">
+                <span className="text-lg text-grey-500">
                   {count > 0 ? `${count} · ` : ""}
                   {expanded ? "–" : "+"}
                 </span>
               </button>
               {expanded && (
-                <ul className="pb-2">
+                <ul className="flex flex-wrap">
                   {service.options.map((opt) => {
                     const on = isSelected(opt.id);
                     return (
@@ -74,21 +74,20 @@ export function ServicePicker({
                         <button
                           type="button"
                           onClick={() => toggle(opt.id, opt.name, opt.price)}
-                          className="flex w-full items-center justify-between px-4 py-2 text-left transition-colors hover:bg-white/5"
+                          className="flex w-full gap-[2px] items-center justify-between px-4 py-2 text-left transition-colors hover:bg-white/5"
                         >
-                          <span className="flex items-center gap-3">
+                          <span className="flex items-center gap-1">
                             <span
-                              className={`flex h-5 w-5 items-center justify-center rounded-full border text-[11px] ${
+                              className={`flex h-3 w-3 items-center justify-center rounded-full border text-[10px] ${
                                 on
                                   ? "border-orange-400 bg-orange-400 text-white"
-                                  : "border-white/30 text-grey-400"
+                                  : "border-none bg-[#303236]"
                               }`}
                             >
-                              {on ? "✓" : "+"}
+                              {on ? "✓" : ""}
                             </span>
                             <span className="t-body4 text-grey-200">{opt.name}</span>
                           </span>
-                          <span className="t-body4 text-grey-400">{formatEUR(opt.price)}</span>
                         </button>
                       </li>
                     );

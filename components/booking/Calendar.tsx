@@ -96,7 +96,7 @@ export function Calendar({
   const cells = buildMonthCells(month);
 
   return (
-    <div className="frost w-full rounded-md border border-white/10 p-4">
+    <div className="bg-black/95 w-full border-b border-white p-4">
       <div className="mb-3 flex items-center justify-between">
         <button type="button" aria-label="Previous month" onClick={() => setMonth(addMonths(month, -1))} className="px-2 text-grey-300 hover:text-white">‹</button>
         <span className="t-body3 text-white">
@@ -126,8 +126,8 @@ export function Calendar({
               className={[
                 "t-body4 h-9 rounded-sm transition-colors",
                 disabled ? "cursor-not-allowed text-grey-700 line-through" : "text-grey-200 hover:bg-white/10",
-                inRange(day) ? "bg-orange-400/25 text-white" : "",
-                selected ? "!bg-orange-400 !text-white" : "",
+                inRange(day) ? "bg-[#441C04] text-white" : "",
+                selected ? "!bg-[#742F06] !text-white" : "",
               ].join(" ")}
             >
               {cell.getUTCDate()}

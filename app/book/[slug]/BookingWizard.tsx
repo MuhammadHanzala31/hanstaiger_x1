@@ -148,9 +148,10 @@ export function BookingWizard({
             info={meta.info}
           >
             {step === "dates" && (
-              <div className="relative flex w-full flex-col items-center gap-2 md:w-auto">
-                {calOpen && (
-                  <div className="absolute bottom-full left-1/2 z-20 mb-3 w-[320px] max-w-[92vw] -translate-x-1/2">
+              <div className="relative flex w-full flex-col justify-between h-[30vh] gap-2 md:w-auto">
+                <div>
+                  {calOpen && (
+                  <div className="absolute bottom-9 md:left-[12vw] left-1/2 z-20 mb-3 w-[320px] max-w-[92vw] -translate-x-1/2">
                     <Calendar
                       value={{ start: draft.startDate, end: draft.endDate }}
                       blocked={blocked}
@@ -164,6 +165,7 @@ export function BookingWizard({
                     />
                   </div>
                 )}
+                </div>
                 <div className="flex w-full flex-col items-stretch gap-2 md:w-auto md:flex-row md:items-end">
                   <button
                     type="button"
@@ -180,7 +182,7 @@ export function BookingWizard({
             )}
 
             {step === "guests" && (
-              <div className="flex w-full flex-col items-stretch gap-2 md:w-auto md:flex-row md:items-end">
+              <div className="flex w-full flex-col items-stretch md:justify-between h-[30vh] gap-2 md:w-auto md:flex-row md:items-end">
                 <GuestStepper
                   value={draft.guests}
                   min={yacht.includedGuests}
@@ -192,7 +194,7 @@ export function BookingWizard({
             )}
 
             {step === "services" && (
-              <div className="flex w-full flex-col items-stretch gap-3 md:w-[360px]">
+              <div className="flex w-full relative md:-top-40 flex-col gap-2 md:w-[360px]">
                 <ServicePicker
                   services={services}
                   selected={draft.selectedOptions}
@@ -209,7 +211,7 @@ export function BookingWizard({
             )}
 
             {step === "details" && (
-              <div className="w-full md:w-[360px]">
+              <div className="w-full flex flex-col gap-2 md:w-[360px] relative md:-top-16">
                 <DetailsForm deposit={draft.deposit} onProceed={handleProceed} />
                 <p className="t-caption3 mt-3 text-center uppercase text-grey-300">
                   Deposit due · {formatEUR(draft.deposit)}
