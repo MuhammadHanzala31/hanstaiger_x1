@@ -36,7 +36,7 @@ export function ServicePicker({
 
   return (
     <div className="bg-black rounded-none border border-white/10">
-      <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+      {/* <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
         <span className="eyebrow">Select your services</span>
         <button
           type="button"
@@ -46,14 +46,14 @@ export function ServicePicker({
         >
           Clear all{pending ? " · …" : ""}
         </button>
-      </div>
+      </div> */}
 
-      <div className="max-h-72 overflow-y-auto">
+      <div className="max-h-72 flex flex-col gap-1 overflow-y-auto">
         {services.map((service) => {
           const expanded = open === service.id;
           const count = service.options.filter((o) => isSelected(o.id)).length;
           return (
-            <div key={service.id} className="border-b border-white/5 last:border-0">
+            <div key={service.id} className="border-b  border-white/50 last:border-0">
               <button
                 type="button"
                 onClick={() => setOpen(expanded ? null : service.id)}

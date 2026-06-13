@@ -67,7 +67,7 @@ export function IntroCarousel({ onStart }: { onStart: () => void }) {
           <button
             type="button"
             onClick={onStart}
-            className="t-button1 rounded-sm bg-orange-400 px-6 py-3 text-white transition-colors hover:bg-orange-500"
+            className="t-button1 bg-orange-400 px-6 py-3 text-white transition-colors hover:bg-orange-500"
           >
             Customize your experience
           </button>

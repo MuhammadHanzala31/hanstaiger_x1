@@ -3,7 +3,9 @@
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { formatEUR } from "@/lib/money";
+import sail from '@/public/sail.png'
 import type { DraftState, Yacht, WizardStep } from "@/lib/booking/types";
+import Image from "next/image";
 
 const STEPS: { key: WizardStep; label: string }[] = [
   { key: "dates", label: "Dates" },
@@ -145,7 +147,7 @@ export function WizardChrome({
       {/* Total — desktop card (bottom-left) */}
       <div className="frost absolute bottom-[38px] left-20 hidden w-[92px] flex-col gap-4 rounded-[4px] p-[6px] md:flex">
         <div className="flex aspect-square w-full items-center justify-center rounded-[3.667px] bg-white">
-          <SailMark />
+          <Image src={sail} alt="sorry"/>
         </div>
         <div className="flex flex-col gap-2">
           <p className="t-caption3 uppercase text-white">Total amount</p>
@@ -169,7 +171,8 @@ export function WizardChrome({
       {/* Total — mobile full-width frosted bottom bar */}
       <div className="frost -mx-4 mt-10 flex items-center gap-4 p-4 md:hidden">
         <div className="flex size-12 items-center justify-center rounded-[3.667px] bg-white">
-          <SailMark size={22} />
+                    <Image src={sail} alt="sorry"/>
+
         </div>
         <div className="flex flex-1 items-center justify-between">
           <p className="t-caption3 uppercase text-white">Total amount</p>
