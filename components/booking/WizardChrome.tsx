@@ -155,7 +155,6 @@ export function WizardChrome({
         </div>
       </div>
 
-      {/* Info — desktop card (bottom-right) */}
       <button
         type="button"
         onClick={() => setInfoOpen((o) => !o)}

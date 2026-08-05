@@ -22,16 +22,16 @@ export function Calendar({
   seasonStart,
   seasonEnd,
   onSelect,
+  onClose,
 }: {
   value: { start: string | null; end: string | null };
   blocked: BlockedRange[];
   seasonStart: string | null;
   seasonEnd: string | null;
   onSelect: (start: string, end: string) => Promise<{ ok: boolean; reason?: string }>;
+  onClose?: () => void;
 }) {
   const today = iso(new Date());
-  // Open on the first month that actually has selectable days: the later of
-  // today and the season start (never a fully-past month).
   const firstSelectable =
     seasonStart && seasonStart > today ? seasonStart : today;
   const initialMonth = value.start ? parse(value.start) : parse(firstSelectable);
@@ -50,7 +50,6 @@ export function Calendar({
       if (seasonStart && day < seasonStart) return true;
       if (seasonEnd && day > seasonEnd) return true;
       for (const b of blocked) {
-        // end exclusive, matching server-side validateRange overlap semantics
         if (t >= parse(b.start).getTime() && t < parse(b.end).getTime()) return true;
       }
       return false;
@@ -66,7 +65,6 @@ export function Calendar({
 
   const pick = (day: string) => {
     setError(null);
-    // start a new range if none in progress or both already chosen
     if (!pendingStart || (pendingStart && pendingEnd)) {
       setPendingStart(day);
       setPendingEnd(null);
@@ -86,7 +84,11 @@ export function Calendar({
     const start = pendingStart;
     startTransition(async () => {
       const res = await onSelect(start, day);
-      if (!res.ok) setError(reasonText(res.reason));
+      if (!res.ok) {
+        setError(reasonText(res.reason));
+      } else {
+        onClose?.();
+      }
     });
   };
 
@@ -145,7 +147,7 @@ function buildMonthCells(month: Date): (Date | null)[] {
   const year = month.getUTCFullYear();
   const m = month.getUTCMonth();
   const first = new Date(Date.UTC(year, m, 1));
-  const startPad = (first.getUTCDay() + 6) % 7; // Monday-first
+  const startPad = (first.getUTCDay() + 6) % 7;
   const daysInMonth = new Date(Date.UTC(year, m + 1, 0)).getUTCDate();
   const cells: (Date | null)[] = [];
   for (let i = 0; i < startPad; i++) cells.push(null);

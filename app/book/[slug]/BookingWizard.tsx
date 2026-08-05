@@ -129,7 +129,7 @@ export function BookingWizard({
           <>
             <header className="flex items-center justify-between px-8 py-6 md:px-20">
               <span className="t-caption1 uppercase tracking-[0.4em] text-white">Hanstaiger</span>
-              <Link href="/" aria-label="Close" className="frost flex size-9 items-center justify-center rounded-[2px] text-white hover:bg-white/15">
+              <Link href="https://jygr5f-6j.myshopify.com/" aria-label="Close" className="frost flex size-9 items-center justify-center rounded-[2px] text-white hover:bg-white/15">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
                   <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
                 </svg>
