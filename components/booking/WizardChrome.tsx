@@ -46,7 +46,7 @@ function Wordmark() {
 function CloseButton() {
   return (
     <Link
-      href="/"
+      href="https://jygr5f-6j.myshopify.com/"
       aria-label="Close"
       className="frost absolute right-4 top-8 flex size-9 items-center justify-center rounded-[2px] text-white transition-colors hover:bg-white/15 md:right-20"
     >
