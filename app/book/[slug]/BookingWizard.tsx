@@ -54,6 +54,23 @@ function pillDate(iso: string): string {
   });
 }
 
+function datesErrorText(reason?: string): string {
+  switch (reason) {
+    case "min_nights":
+      return "Your stay is too short for this yacht.";
+    case "max_nights":
+      return "Your stay exceeds the maximum charter length.";
+    case "out_of_season":
+      return "Those dates are outside the available season.";
+    case "unavailable":
+      return "Those dates are no longer available.";
+    case "invalid_range":
+      return "Please choose a valid date range.";
+    default:
+      return "Those dates can't be booked. Try another range.";
+  }
+}
+
 export function BookingWizard({
   yacht,
   services,
@@ -69,6 +86,8 @@ export function BookingWizard({
   const [step, setStep] = useState<WizardStep>("dates");
   const [draft, setDraft] = useState<DraftState>(initialDraft);
   const [calOpen, setCalOpen] = useState(false);
+  const [datesPending, setDatesPending] = useState(false);
+  const [datesError, setDatesError] = useState<string | null>(null);
 
   const meta = STEP_META[step];
   const next = () => {
@@ -158,8 +177,13 @@ export function BookingWizard({
                       seasonStart={yacht.seasonStart}
                       seasonEnd={yacht.seasonEnd}
                       onSelect={async (s, e) => {
+                        // Close immediately — don't make the user wait for the server round trip.
+                        setCalOpen(false);
+                        setDatesPending(true);
+                        setDatesError(null);
                         const r = await handleDates(s, e);
-                        if (r.ok) setCalOpen(false);
+                        setDatesPending(false);
+                        if (!r.ok) setDatesError(datesErrorText(r.reason));
                         return r;
                       }}
                     />
@@ -170,14 +194,30 @@ export function BookingWizard({
                   <button
                     type="button"
                     onClick={() => setCalOpen((o) => !o)}
-                    className="flex h-12 w-full items-center justify-between gap-9 rounded-[2px] bg-grey-900 px-4 text-white md:w-auto md:justify-start"
+                    disabled={datesPending}
+                    className="flex h-12 w-full items-center justify-between gap-9 rounded-[2px] bg-grey-900 px-4 text-white disabled:opacity-70 md:w-auto md:justify-start"
                   >
-                    <span className="t-body3">{draft.startDate ? pillDate(draft.startDate) : "Departure"}</span>
-                    <span aria-hidden>→</span>
-                    <span className="t-body3">{draft.endDate ? pillDate(draft.endDate) : "Return"}</span>
+                    {datesPending ? (
+                      <span className="flex w-full items-center justify-center gap-2">
+                        <svg className="size-4 animate-spin text-white" viewBox="0 0 24 24" fill="none" aria-hidden>
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z" />
+                        </svg>
+                        <span className="t-body3">Checking availability…</span>
+                      </span>
+                    ) : (
+                      <>
+                        <span className="t-body3">{draft.startDate ? pillDate(draft.startDate) : "Departure"}</span>
+                        <span aria-hidden>→</span>
+                        <span className="t-body3">{draft.endDate ? pillDate(draft.endDate) : "Return"}</span>
+                      </>
+                    )}
                   </button>
-                  <SecondaryButton onClick={next} disabled={!hasDates}>Next</SecondaryButton>
+                  <SecondaryButton onClick={next} disabled={!hasDates || datesPending}>Next</SecondaryButton>
                 </div>
+                {datesError && (
+                  <p className="t-caption3 text-obsession-red">{datesError}</p>
+                )}
               </div>
             )}
 

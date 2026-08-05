@@ -23,6 +23,8 @@ export function Calendar({
   seasonEnd,
   onSelect,
   onClose,
+  onPendingChange,
+  onError,
 }: {
   value: { start: string | null; end: string | null };
   blocked: BlockedRange[];
@@ -30,6 +32,8 @@ export function Calendar({
   seasonEnd: string | null;
   onSelect: (start: string, end: string) => Promise<{ ok: boolean; reason?: string }>;
   onClose?: () => void;
+  onPendingChange?: (pending: boolean) => void;
+  onError?: (message: string) => void;
 }) {
   const today = iso(new Date());
   const firstSelectable =
@@ -82,12 +86,16 @@ export function Calendar({
     }
     setPendingEnd(day);
     const start = pendingStart;
+
+    // Close immediately — don't make the user wait for the server round trip.
+    onClose?.();
+    onPendingChange?.(true);
+
     startTransition(async () => {
       const res = await onSelect(start, day);
+      onPendingChange?.(false);
       if (!res.ok) {
-        setError(reasonText(res.reason));
-      } else {
-        onClose?.();
+        onError?.(reasonText(res.reason));
       }
     });
   };
