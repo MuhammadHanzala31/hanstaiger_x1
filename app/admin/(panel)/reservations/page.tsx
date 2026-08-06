@@ -1,8 +1,13 @@
 import Link from "next/link";
 import { headers } from "next/headers";
-import { listBookings } from "@/lib/admin/queries";
+import { listBookings, listYachts, getCalendarEvents } from "@/lib/admin/queries";
 import { formatEUR } from "@/lib/money";
 import { StatusBadge } from "@/components/admin/StatusBadge";
+import { BookingsCalendar } from "@/components/admin/BookingsCalendar";
+
+function iso(d: Date): string {
+  return d.toISOString().slice(0, 10);
+}
 
 async function feedUrl(): Promise<string | null> {
   const token = process.env.CALENDAR_FEED_TOKEN;
@@ -15,14 +20,69 @@ async function feedUrl(): Promise<string | null> {
   return `${proto}://${host}/api/calendar/feed?token=${token}`;
 }
 
-export default async function ReservationsPage() {
-  const bookings = await listBookings();
-  const feed = await feedUrl();
+export default async function ReservationsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ yacht?: string; month?: string }>;
+}) {
+  const [bookings, yachts, feed, { yacht: yachtParam, month: monthParam }] = await Promise.all([
+    listBookings(),
+    listYachts(),
+    feedUrl(),
+    searchParams,
+  ]);
+
+  const yacht = yachts.find((y) => y.id === yachtParam) ?? yachts[0];
+
+  const now = new Date();
+  const [yearStr, monthStr] = (monthParam ?? "").split("-");
+  const year = Number(yearStr) || now.getUTCFullYear();
+  const month = monthStr ? Number(monthStr) - 1 : now.getUTCMonth();
+
+  const rangeStart = `${year}-${String(month + 1).padStart(2, "0")}-01`;
+  const nextMonthDate = new Date(Date.UTC(year, month + 1, 1));
+  const prevMonthDate = new Date(Date.UTC(year, month - 1, 1));
+  const rangeEnd = iso(nextMonthDate);
+
+  const events = yacht ? await getCalendarEvents(yacht.id, rangeStart, rangeEnd) : [];
+
+  const monthParamFor = (d: Date) =>
+    `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+  const monthHref = (d: Date) =>
+    `/admin/reservations?yacht=${yacht?.id ?? ""}&month=${monthParamFor(d)}`;
 
   return (
     <div>
       <h1 className="t-h3 mb-1 text-white">Reservations</h1>
       <p className="t-body3 mb-6 text-grey-400">{bookings.length} total.</p>
+
+      {yachts.length > 0 && (
+        <div className="mb-4 flex gap-2">
+          {yachts.map((y) => (
+            <Link
+              key={y.id}
+              href={`/admin/reservations?yacht=${y.id}&month=${monthParamFor(new Date(Date.UTC(year, month, 1)))}`}
+              className={`t-button2 rounded-sm px-3 py-2 ${
+                y.id === yacht?.id ? "bg-white text-grey-900" : "border border-white/20 text-grey-300"
+              }`}
+            >
+              {y.name}
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {yacht && (
+        <div className="mb-8">
+          <BookingsCalendar
+            year={year}
+            month={month}
+            events={events}
+            prevHref={monthHref(prevMonthDate)}
+            nextHref={monthHref(nextMonthDate)}
+          />
+        </div>
+      )}
 
       <div className="mb-8 rounded-lg border border-white/10 bg-white/5 p-4">
         <p className="eyebrow mb-2">Team calendar feed</p>

@@ -55,5 +55,16 @@ export async function confirmBooking(
     note: `Booking ${bookingId}`,
   });
 
+  // These dates are now taken — any other booking still awaiting payment for
+  // an overlapping range can never be paid into a valid slot, so cancel it.
+  await client
+    .from("bookings")
+    .update({ status: "cancelled" })
+    .eq("yacht_id", existing.yacht_id)
+    .eq("status", "pending_payment")
+    .neq("id", bookingId)
+    .lt("start_date", existing.end_date)
+    .gt("end_date", existing.start_date);
+
   return updated as ConfirmedBooking;
 }

@@ -9,10 +9,6 @@ interface Slide {
 
 const SLIDES: Slide[] = [
   {
-    eyebrow: "Chartering the X1",
-    body: "Welcome to the Hanstaiger X1 booking experience. We'll guide you through a few simple questions to craft your perfect voyage.",
-  },
-  {
     eyebrow: "Select your dates",
     body: "Find the perfect moment for your X1 experience.",
   },
@@ -20,6 +16,10 @@ const SLIDES: Slide[] = [
     eyebrow: "Choose your guests",
     body: "The X1 hosts up to 12 guests. Add your group to view pricing.",
   },
+  {
+    eyebrow: "Refine your experience",
+    body: "Enhance your X1 with additional services. After booking, our concierge can take care of any request."
+  }, 
   {
     eyebrow: "Lock in your reservation",
     body: "Secure your reservation with a deposit, non-refundable per booking conditions.",
@@ -62,8 +62,8 @@ export function IntroCarousel({ onStart }: { onStart: () => void }) {
       <div className="max-w-xl flex flex-col h-[60vh] justify-between pb-4 gap-4 px-20">
         <h1 className="t-title3 text-white">Book the X1 experience</h1>
         <div className="">
-          <p className=" text-white mb-4  text-xl">{slide.eyebrow}</p>
-          <p className="t-body3 mb-6 text-white text-xl" >{slide.body}</p>
+          <p className=" text-white text-[12px] mb-6 uppercase leading-relaxed tracking-wider">CHARTERING THE X1</p>
+          <p className="t-body3 mb-6 text-white text-xl" >Welcome to the Hanstaiger X1 booking experience. We’ll guide you through a few simple questions to craft your perfect voyage.</p>
           <button
             type="button"
             onClick={onStart}
@@ -76,16 +76,16 @@ export function IntroCarousel({ onStart }: { onStart: () => void }) {
 
       <div className="flex flex-col gap-8 md:flex-row md:items-end px-12 py-10 md:justify-between bg-black w-full">
 
-        <div className="max-w-md flex flex-col gap-4" >
-          <div className="mt-2 h-[2px] px-8 w-full bg-white/15">
+        <div className="flex flex-col" >
+          <div className="mt-2 h-[1px] md:w-[224px] w-full bg-[#DFE0E3] mb-[17px]">
             <div
               className="h-px bg-orange-400 transition-[width]  duration-100 ease-linear"
               style={{ width: `${progress * 100}%` }}
             />
           </div>
 
-          <p className="t-body3  text-white text-xl" >Select your dates</p>
-          <p className="eyebrow text-white text-xl" >Find the perfect moment for your X1 experience</p>
+          <p className="text-white text-[12px] uppercase leading-relaxed tracking-wider" >{slide.eyebrow}</p>
+          <p className="text-[16px] text-[#989BA2] leading-relaxed" >{slide.body}</p>
 
 
 

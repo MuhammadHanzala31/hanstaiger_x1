@@ -53,6 +53,68 @@ export async function getBooking(id: string) {
   return data;
 }
 
+export type CalendarEventKind = "confirmed" | "pending" | "hold" | "maintenance";
+
+export interface CalendarEvent {
+  id: string;
+  kind: CalendarEventKind;
+  label: string;
+  start_date: string;
+  end_date: string;
+  href: string | null;
+}
+
+/**
+ * Bookings (confirmed + pending) and manual blocks (holds + maintenance) for
+ * one yacht, overlapping [rangeStart, rangeEnd), merged into a single list
+ * for the reservations calendar. The auto-created 'booked' block for each
+ * confirmed booking is skipped — the booking itself already represents it.
+ */
+export async function getCalendarEvents(
+  yachtId: string,
+  rangeStart: string,
+  rangeEnd: string,
+): Promise<CalendarEvent[]> {
+  const client = createServiceClient();
+
+  const [{ data: bookings }, { data: blocks }] = await Promise.all([
+    client
+      .from("bookings")
+      .select("id, customer_name, start_date, end_date, status")
+      .eq("yacht_id", yachtId)
+      .in("status", ["confirmed", "pending_payment"])
+      .lt("start_date", rangeEnd)
+      .gt("end_date", rangeStart),
+    client
+      .from("availability_blocks")
+      .select("id, reason, note, start_date, end_date")
+      .eq("yacht_id", yachtId)
+      .in("reason", ["hold", "maintenance"])
+      .lt("start_date", rangeEnd)
+      .gt("end_date", rangeStart),
+  ]);
+
+  const bookingEvents: CalendarEvent[] = (bookings ?? []).map((b) => ({
+    id: `booking-${b.id}`,
+    kind: b.status === "confirmed" ? "confirmed" : "pending",
+    label: b.customer_name,
+    start_date: b.start_date,
+    end_date: b.end_date,
+    href: `/admin/reservations/${b.id}`,
+  }));
+
+  const blockEvents: CalendarEvent[] = (blocks ?? []).map((b) => ({
+    id: `block-${b.id}`,
+    kind: b.reason as "hold" | "maintenance",
+    label: b.note || (b.reason === "hold" ? "Hold" : "Maintenance"),
+    start_date: b.start_date,
+    end_date: b.end_date,
+    href: null,
+  }));
+
+  return [...bookingEvents, ...blockEvents];
+}
+
 export async function listYachts() {
   const client = createServiceClient();
   const { data } = await client.from("yachts").select("*").order("sort_order");
