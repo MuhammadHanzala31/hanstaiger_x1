@@ -1,181 +1,105 @@
-"use client";
+const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
-import { useMemo, useState, useTransition } from "react";
-import type { BlockedRange } from "@/lib/booking/types";
-
-const DAY_MS = 86_400_000;
-const WEEKDAYS = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
-
-function iso(d: Date): string {
+export function iso(d: Date): string {
   return d.toISOString().slice(0, 10);
 }
-function parse(s: string): Date {
-  return new Date(s + "T00:00:00Z");
+export function monthOf(day: string): Date {
+  return new Date(day.slice(0, 8) + "01T00:00:00Z");
 }
 function addMonths(d: Date, n: number): Date {
   return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + n, 1));
 }
 
+/** Month grid(s): two side by side on desktop, one inside the mobile sheet. */
 export function Calendar({
-  value,
-  blocked,
-  seasonStart,
-  seasonEnd,
-  onSelect,
-  onClose,
+  month,
+  months,
+  onMonth,
+  start,
+  end,
+  isDisabled,
+  onPick,
 }: {
-  value: { start: string | null; end: string | null };
-  blocked: BlockedRange[];
-  seasonStart: string | null;
-  seasonEnd: string | null;
-  onSelect: (start: string, end: string) => Promise<{ ok: boolean; reason?: string }>;
-  onClose?: () => void;
+  month: Date;
+  months: 1 | 2;
+  onMonth: (m: Date) => void;
+  start: string | null;
+  end: string | null;
+  isDisabled: (day: string) => boolean;
+  onPick: (day: string) => void;
 }) {
-  const today = iso(new Date());
-  const firstSelectable =
-    seasonStart && seasonStart > today ? seasonStart : today;
-  const initialMonth = value.start ? parse(value.start) : parse(firstSelectable);
-  const [month, setMonth] = useState(
-    new Date(Date.UTC(initialMonth.getUTCFullYear(), initialMonth.getUTCMonth(), 1)),
-  );
-  const [pendingStart, setPendingStart] = useState<string | null>(value.start);
-  const [pendingEnd, setPendingEnd] = useState<string | null>(value.end);
-  const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
-
-  const dayBlocked = useMemo(() => {
-    return (day: string) => {
-      const t = parse(day).getTime();
-      if (day < today) return true;
-      if (seasonStart && day < seasonStart) return true;
-      if (seasonEnd && day > seasonEnd) return true;
-      for (const b of blocked) {
-        if (t >= parse(b.start).getTime() && t < parse(b.end).getTime()) return true;
-      }
-      return false;
-    };
-  }, [blocked, seasonStart, seasonEnd, today]);
-
-  const rangeHasBlocked = (start: string, end: string) => {
-    for (let t = parse(start).getTime(); t < parse(end).getTime(); t += DAY_MS) {
-      if (dayBlocked(iso(new Date(t)))) return true;
-    }
-    return false;
-  };
-
-  const pick = (day: string) => {
-    setError(null);
-    if (!pendingStart || (pendingStart && pendingEnd)) {
-      setPendingStart(day);
-      setPendingEnd(null);
-      return;
-    }
-    if (day <= pendingStart) {
-      setPendingStart(day);
-      return;
-    }
-    if (rangeHasBlocked(pendingStart, day)) {
-      setError("Those dates include unavailable days. Pick another range.");
-      setPendingStart(day);
-      setPendingEnd(null);
-      return;
-    }
-    setPendingEnd(day);
-    const start = pendingStart;
-    startTransition(async () => {
-      const res = await onSelect(start, day);
-      if (!res.ok) {
-        setError(reasonText(res.reason));
-      } else {
-        onClose?.();
-      }
-    });
-  };
-
-  const inRange = (day: string) =>
-    pendingStart && pendingEnd && day > pendingStart && day < pendingEnd;
-
-  const cells = buildMonthCells(month);
-
+  const shown = months === 2 ? [month, addMonths(month, 1)] : [month];
   return (
-    <div className="bg-black/95 w-full border-b border-white p-4">
-      <div className="mb-3 flex items-center justify-between">
-        <button type="button" aria-label="Previous month" onClick={() => setMonth(addMonths(month, -1))} className="px-2 text-grey-300 hover:text-white">‹</button>
-        <span className="t-body3 text-white">
-          {month.toLocaleDateString("en-GB", { month: "long", year: "numeric", timeZone: "UTC" })}
-        </span>
-        <button type="button" aria-label="Next month" onClick={() => setMonth(addMonths(month, 1))} className="px-2 text-grey-300 hover:text-white">›</button>
-      </div>
-
-      <div className="grid grid-cols-7 gap-1">
-        {WEEKDAYS.map((w) => (
-          <div key={w} className="t-caption3 py-1 text-center text-grey-500">{w}</div>
-        ))}
-        {cells.map((cell, i) => {
-          if (!cell) return <div key={i} />;
-          const day = iso(cell);
-          const disabled = dayBlocked(day);
-          const isStart = day === pendingStart;
-          const isEnd = day === pendingEnd;
-          const selected = isStart || isEnd;
-          const loading = isPending && isEnd;
-          return (
-            <button
-              key={i}
-              type="button"
-              disabled={disabled || loading}
-              onClick={() => pick(day)}
-              aria-label={day}
-              className={[
-                "t-body4 h-9 rounded-sm transition-colors flex items-center justify-center",
-                disabled ? "cursor-not-allowed text-grey-700 line-through" : "text-grey-200 hover:bg-white/10",
-                inRange(day) ? "bg-[#441C04] text-white" : "",
-                selected ? "!bg-[#742F06] !text-white" : "",
-              ].join(" ")}
-            >
-              {loading ? (
-                <span
-                  aria-hidden
-                  className="size-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white"
-                />
-              ) : (
-                cell.getUTCDate()
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      {error && <p className="t-caption3 mt-3 text-obsession-red">{error}</p>}
+    <div className={`grid gap-4 ${months === 2 ? "grid-cols-2" : ""}`}>
+      {shown.map((m, i) => (
+        <div key={iso(m)}>
+          <div className="relative h-[18px] text-center">
+            {i === 0 && (
+              <button type="button" aria-label="Previous month" onClick={() => onMonth(addMonths(month, -1))} className="absolute -left-1.5 top-0 desk:left-0">
+                <Chevron d="M10.332 12L6.332 8L10.332 4" />
+              </button>
+            )}
+            <p className="text-[12px]/[18px] font-bold tracking-[0.2px] text-grey-850">
+              {m.toLocaleDateString("en-GB", { month: "long", year: "numeric", timeZone: "UTC" })}
+            </p>
+            {i === shown.length - 1 && (
+              <button type="button" aria-label="Next month" onClick={() => onMonth(addMonths(month, 1))} className="absolute -right-[5.32px] top-0 desk:right-0">
+                <Chevron d="M6.34 4L10.34 8L6.34 12" />
+              </button>
+            )}
+          </div>
+          <div className="mt-[23px] grid grid-cols-7 text-center text-[12px]/[16px] font-medium tracking-[0.2px] text-grey-500 desk:mt-[19px]">
+            {WEEKDAYS.map((w) => (
+              <span key={w}>{w}</span>
+            ))}
+          </div>
+          <div className="mt-1 grid grid-cols-7 desk:mt-[3px]">
+            {monthCells(m).map((d, k) => {
+              if (!d) return <span key={k} />;
+              const day = iso(d);
+              const disabled = isDisabled(day);
+              const edge = day === start || day === end;
+              const inRange = start && end && day > start && day < end;
+              return (
+                <button
+                  key={k}
+                  type="button"
+                  aria-label={day}
+                  aria-pressed={edge}
+                  disabled={disabled}
+                  onClick={() => onPick(day)}
+                  className={`relative flex h-12 items-center justify-center text-[12px]/[16px] font-bold tracking-[0.2px] desk:h-[50px] ${
+                    disabled ? "cursor-not-allowed text-grey-400" : edge ? "text-white" : "text-grey-900"
+                  }`}
+                >
+                  {(edge || inRange) && <span className={`absolute size-9 rounded-[2px] ${edge ? "bg-grey-900" : "bg-grey-50"}`} />}
+                  <span className="relative">{d.getUTCDate()}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
 
-function buildMonthCells(month: Date): (Date | null)[] {
-  const year = month.getUTCFullYear();
-  const m = month.getUTCMonth();
-  const first = new Date(Date.UTC(year, m, 1));
-  const startPad = (first.getUTCDay() + 6) % 7;
-  const daysInMonth = new Date(Date.UTC(year, m + 1, 0)).getUTCDate();
-  const cells: (Date | null)[] = [];
-  for (let i = 0; i < startPad; i++) cells.push(null);
-  for (let d = 1; d <= daysInMonth; d++) cells.push(new Date(Date.UTC(year, m, d)));
-  return cells;
+function Chevron({ d }: { d: string }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" aria-hidden className="text-grey-850">
+      <path d={d} />
+    </svg>
+  );
 }
 
-function reasonText(reason?: string): string {
-  switch (reason) {
-    case "min_nights":
-      return "Your stay is too short for this yacht.";
-    case "max_nights":
-      return "Your stay exceeds the maximum charter length.";
-    case "out_of_season":
-      return "Those dates are outside the available season.";
-    case "unavailable":
-      return "Those dates are no longer available.";
-    case "invalid_range":
-      return "Please choose a valid date range.";
-    default:
-      return "Those dates can't be booked. Try another range.";
-  }
+/** Leading blanks (weeks start on Sunday) followed by each day of the month. */
+function monthCells(month: Date): (Date | null)[] {
+  const y = month.getUTCFullYear();
+  const m = month.getUTCMonth();
+  const pad = new Date(Date.UTC(y, m, 1)).getUTCDay();
+  const days = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
+  return [
+    ...Array<null>(pad).fill(null),
+    ...Array.from({ length: days }, (_, i) => new Date(Date.UTC(y, m, i + 1))),
+  ];
 }

@@ -1,51 +1,76 @@
 @import "tailwindcss";
 
-/* Self-hosted Helvetica Neue (public/font/helvetica-neue-5) */
+/* Self-hosted Helvetica Neue (public/font/helvetica-neue-5).
+ * The .woff2 files are the original OTFs converted to TrueType outlines: Windows
+ * darkens CFF stems at small sizes, which made 10–13px text look bold.
+ * Metric overrides pin the Windows (OS/2 win) metrics the design was laid out
+ * with, so baselines match on macOS too (CoreText would use hhea otherwise). */
 @font-face {
   font-family: "Helvetica Neue";
-  src: url("/font/helvetica-neue-5/HelveticaNeueUltraLight.otf") format("opentype");
+  src: url("/font/helvetica-neue-5/HelveticaNeueUltraLight.woff2") format("woff2");
+  ascent-override: 90.9%;
+  descent-override: 21.9%;
+  line-gap-override: 0%;
   font-weight: 100;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: "Helvetica Neue";
-  src: url("/font/helvetica-neue-5/HelveticaNeueUltraLightItalic.otf") format("opentype");
+  src: url("/font/helvetica-neue-5/HelveticaNeueUltraLightItalic.woff2") format("woff2");
+  ascent-override: 90.9%;
+  descent-override: 21.9%;
+  line-gap-override: 0%;
   font-weight: 100;
   font-style: italic;
   font-display: swap;
 }
 @font-face {
   font-family: "Helvetica Neue";
-  src: url("/font/helvetica-neue-5/HelveticaNeueThin.otf") format("opentype");
+  src: url("/font/helvetica-neue-5/HelveticaNeueThin.woff2") format("woff2");
+  ascent-override: 90.9%;
+  descent-override: 21.4%;
+  line-gap-override: 0%;
   font-weight: 200;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: "Helvetica Neue";
-  src: url("/font/helvetica-neue-5/HelveticaNeueThinItalic.otf") format("opentype");
+  src: url("/font/helvetica-neue-5/HelveticaNeueThinItalic.woff2") format("woff2");
+  ascent-override: 90.9%;
+  descent-override: 21.4%;
+  line-gap-override: 0%;
   font-weight: 200;
   font-style: italic;
   font-display: swap;
 }
 @font-face {
   font-family: "Helvetica Neue";
-  src: url("/font/helvetica-neue-5/HelveticaNeueLight.otf") format("opentype");
+  src: url("/font/helvetica-neue-5/HelveticaNeueLight.woff2") format("woff2");
+  ascent-override: 90.2%;
+  descent-override: 21.4%;
+  line-gap-override: 0%;
   font-weight: 300;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: "Helvetica Neue";
-  src: url("/font/helvetica-neue-5/HelveticaNeueLightItalic.otf") format("opentype");
+  src: url("/font/helvetica-neue-5/HelveticaNeueLightItalic.woff2") format("woff2");
+  ascent-override: 90.5%;
+  descent-override: 21.4%;
+  line-gap-override: 0%;
   font-weight: 300;
   font-style: italic;
   font-display: swap;
 }
 @font-face {
   font-family: "Helvetica Neue";
-  src: url("/font/helvetica-neue-5/HelveticaNeueRoman.otf") format("opentype");
+  src: url("/font/helvetica-neue-5/HelveticaNeueRoman.woff2") format("woff2");
+  ascent-override: 89.9%;
+  descent-override: 21.4%;
+  line-gap-override: 0%;
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -53,62 +78,89 @@
 @font-face {
   font-family: "Helvetica Neue";
   src: url("/font/helvetica-neue-5/HelveticaNeueItalic.ttf") format("truetype");
+  ascent-override: 90%;
+  descent-override: 21.4%;
+  line-gap-override: 0%;
   font-weight: 400;
   font-style: italic;
   font-display: swap;
 }
 @font-face {
   font-family: "Helvetica Neue";
-  src: url("/font/helvetica-neue-5/HelveticaNeueMedium.otf") format("opentype");
+  src: url("/font/helvetica-neue-5/HelveticaNeueMedium.woff2") format("woff2");
+  ascent-override: 90%;
+  descent-override: 21.4%;
+  line-gap-override: 0%;
   font-weight: 500;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: "Helvetica Neue";
-  src: url("/font/helvetica-neue-5/HelveticaNeueMediumItalic.otf") format("opentype");
+  src: url("/font/helvetica-neue-5/HelveticaNeueMediumItalic.woff2") format("woff2");
+  ascent-override: 92.8%;
+  descent-override: 21.4%;
+  line-gap-override: 0%;
   font-weight: 500;
   font-style: italic;
   font-display: swap;
 }
 @font-face {
   font-family: "Helvetica Neue";
-  src: url("/font/helvetica-neue-5/HelveticaNeueBold.otf") format("opentype");
+  src: url("/font/helvetica-neue-5/HelveticaNeueBold.woff2") format("woff2");
+  ascent-override: 90.4%;
+  descent-override: 21.4%;
+  line-gap-override: 0%;
   font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: "Helvetica Neue";
-  src: url("/font/helvetica-neue-5/HelveticaNeueBoldItalic.otf") format("opentype");
+  src: url("/font/helvetica-neue-5/HelveticaNeueBoldItalic.woff2") format("woff2");
+  ascent-override: 90.4%;
+  descent-override: 21.4%;
+  line-gap-override: 0%;
   font-weight: 700;
   font-style: italic;
   font-display: swap;
 }
 @font-face {
   font-family: "Helvetica Neue";
-  src: url("/font/helvetica-neue-5/HelveticaNeueHeavy.otf") format("opentype");
+  src: url("/font/helvetica-neue-5/HelveticaNeueHeavy.woff2") format("woff2");
+  ascent-override: 90.3%;
+  descent-override: 21.4%;
+  line-gap-override: 0%;
   font-weight: 800;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: "Helvetica Neue";
-  src: url("/font/helvetica-neue-5/HelveticaNeueHeavyItalic.otf") format("opentype");
+  src: url("/font/helvetica-neue-5/HelveticaNeueHeavyItalic.woff2") format("woff2");
+  ascent-override: 90.3%;
+  descent-override: 21.4%;
+  line-gap-override: 0%;
   font-weight: 800;
   font-style: italic;
   font-display: swap;
 }
 @font-face {
   font-family: "Helvetica Neue";
-  src: url("/font/helvetica-neue-5/HelveticaNeueBlack.otf") format("opentype");
+  src: url("/font/helvetica-neue-5/HelveticaNeueBlack.woff2") format("woff2");
+  ascent-override: 91.1%;
+  descent-override: 21.4%;
+  line-gap-override: 0%;
   font-weight: 900;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: "Helvetica Neue";
-  src: url("/font/helvetica-neue-5/HelveticaNeueBlackItalic.otf") format("opentype");
+  src: url("/font/helvetica-neue-5/HelveticaNeueBlackItalic.woff2") format("woff2");
+  ascent-override: 91.1%;
+  descent-override: 21.4%;
+  line-gap-override: 0%;
   font-weight: 900;
   font-style: italic;
   font-display: swap;
@@ -120,12 +172,15 @@
  */
 :root {
   --grey-900: #111213;
+  --grey-850: #222222;
   --grey-800: #303236;
   --grey-700: #4f5257;
+  --grey-600: #6c6f77;
   --grey-500: #83868e;
   --grey-400: #989ba2;
   --grey-300: #aeb0b5;
   --grey-200: #c5c7cb;
+  --grey-150: #e0e0e3;
   --grey-100: #dfe0e3;
   --grey-50: #f4f4f5;
   --white: #ffffff;
@@ -141,12 +196,15 @@
 /* Expose tokens to Tailwind v4 utilities (bg-grey-900, text-orange-400, etc.) */
 @theme inline {
   --color-grey-900: var(--grey-900);
+  --color-grey-850: var(--grey-850);
   --color-grey-800: var(--grey-800);
   --color-grey-700: var(--grey-700);
+  --color-grey-600: var(--grey-600);
   --color-grey-500: var(--grey-500);
   --color-grey-400: var(--grey-400);
   --color-grey-300: var(--grey-300);
   --color-grey-200: var(--grey-200);
+  --color-grey-150: var(--grey-150);
   --color-grey-100: var(--grey-100);
   --color-grey-50: var(--grey-50);
   --color-white: var(--white);
@@ -156,6 +214,11 @@
   --color-obsession-red: var(--obsession-red-400);
   --color-brown-50: var(--brown-50);
   --font-brand: var(--font-brand);
+}
+
+/* Booking wizard switches from the stacked (mobile) to the two-column layout here. */
+@theme {
+  --breakpoint-desk: 75rem;
 }
 
 html,
@@ -172,6 +235,8 @@ body {
 }
 
 /* ---- Type scale (exact Figma sizes / line-heights / weights / tracking) ---- */
+/* In the components layer so utilities (e.g. font-bold) can still override. */
+@layer components {
 .t-title3 {
   font-size: 56px;
   line-height: 68px;
@@ -243,6 +308,7 @@ body {
   font-weight: 500;
   letter-spacing: 0.2px;
 }
+}
 
 /* Uppercase tracked section label seen throughout the flow */
 .eyebrow {
@@ -277,4 +343,18 @@ body {
   background: rgba(17, 18, 19, 0.55);
   backdrop-filter: blur(60px);
   -webkit-backdrop-filter: blur(60px);
+}
+
+/* While a mobile picker sheet is open only the backdrop shows through the
+ * (darker) total bar, as in the design. */
+@media (width < 75rem) {
+  body:has([data-sheet]) main {
+    visibility: hidden;
+  }
+  body:has([data-sheet]) :is([data-sheet], .total-bar) {
+    visibility: visible;
+  }
+  body:has([data-sheet]) .total-bar {
+    background-color: rgb(55 55 55 / 0.55);
+  }
 }
