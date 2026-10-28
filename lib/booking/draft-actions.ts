@@ -3,7 +3,7 @@
 import { createServiceClient } from "@/lib/supabase/service";
 import { validateRange } from "@/lib/availability";
 import type { SelectedOption } from "@/lib/types";
-import type { DraftState } from "./types";
+import type { DraftState, Yacht } from "./types";
 import { repriceDraft } from "./reprice";
 import { getDraftId, setDraftId } from "./draft-cookie";
 import {
@@ -58,8 +58,8 @@ async function ensureDraftRow(client: ServiceClient, yachtId: string): Promise<D
 }
 
 /** Reprice from a row + yacht and persist; returns the fresh state. */
-async function repersist(client: ServiceClient, row: DraftRow): Promise<DraftState> {
-  const yacht = await loadYachtById(client, row.yacht_id);
+async function repersist(client: ServiceClient, row: DraftRow, loaded?: Yacht | null): Promise<DraftState> {
+  const yacht = loaded ?? (await loadYachtById(client, row.yacht_id));
   if (!yacht) throw new Error("Yacht not found for draft");
   const { total, deposit } = repriceDraft(yacht, row.guests, row.selected_options ?? []);
   const { data } = await client
@@ -88,12 +88,14 @@ export async function setDates(
   end: string,
 ): Promise<DatesResult> {
   const client = createServiceClient();
-  const row = await ensureDraftRow(client, yachtId);
-
-  const yacht = await loadYachtById(client, row.yacht_id);
+  // Independent reads run together: every query is a network round trip.
+  const [row, yacht, blocked] = await Promise.all([
+    ensureDraftRow(client, yachtId),
+    loadYachtById(client, yachtId),
+    loadBlockedRanges(client, yachtId),
+  ]);
   if (!yacht) return { ok: false, reason: "no_draft" };
 
-  const blocked = await loadBlockedRanges(client, row.yacht_id);
   const result = validateRange(
     start,
     end,
@@ -107,20 +109,19 @@ export async function setDates(
   );
   if (!result.ok) return { ok: false, reason: result.reason };
 
-  const state = await repersist(client, { ...row, start_date: start, end_date: end });
+  const state = await repersist(client, { ...row, start_date: start, end_date: end }, yacht);
   return { ok: true, state };
 }
 
 export async function setGuests(yachtId: string, guests: number): Promise<DraftState> {
   const client = createServiceClient();
-  const row = await ensureDraftRow(client, yachtId);
-  const yacht = await loadYachtById(client, row.yacht_id);
+  const [row, yacht] = await Promise.all([ensureDraftRow(client, yachtId), loadYachtById(client, yachtId)]);
   if (!yacht) throw new Error("no_yacht");
   const clamped = Math.min(
     yacht.maxGuests,
     Math.max(yacht.includedGuests, Math.round(guests)),
   );
-  return repersist(client, { ...row, guests: clamped });
+  return repersist(client, { ...row, guests: clamped }, yacht);
 }
 
 export async function setServices(
@@ -128,6 +129,6 @@ export async function setServices(
   options: SelectedOption[],
 ): Promise<DraftState> {
   const client = createServiceClient();
-  const row = await ensureDraftRow(client, yachtId);
-  return repersist(client, { ...row, selected_options: options });
+  const [row, yacht] = await Promise.all([ensureDraftRow(client, yachtId), loadYachtById(client, yachtId)]);
+  return repersist(client, { ...row, selected_options: options }, yacht);
 }

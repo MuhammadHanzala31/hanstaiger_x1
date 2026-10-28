@@ -3,7 +3,7 @@
 import { useMemo, useState, useTransition } from "react";
 import { Calendar, iso, monthOf } from "@/components/booking/Calendar";
 import { CheckoutCta, PanelHeader, Sheet, StepButtons, type CtaProps } from "@/components/booking/ui";
-import { shortDate } from "@/lib/booking/stepValue";
+import { nightsBetween, shortDate } from "@/lib/booking/stepValue";
 import type { BlockedRange, DraftState } from "@/lib/booking/types";
 
 const DAY_MS = 86_400_000;
@@ -13,6 +13,8 @@ export function DatesPanel({
   blocked,
   seasonStart,
   seasonEnd,
+  minNights,
+  maxNights,
   onSelect,
   onClear,
   onContinue,
@@ -22,6 +24,8 @@ export function DatesPanel({
   blocked: BlockedRange[];
   seasonStart: string | null;
   seasonEnd: string | null;
+  minNights: number;
+  maxNights: number;
   onSelect: (start: string, end: string) => Promise<{ ok: boolean; reason?: string }>;
   onClear: () => void;
   onContinue: () => void;
@@ -35,7 +39,7 @@ export function DatesPanel({
     monthOf(draft.startDate ?? (seasonStart && seasonStart > today ? seasonStart : today)),
   );
   const [error, setError] = useState<string | null>(null);
-  const [, startTransition] = useTransition();
+  const [pending, startTransition] = useTransition();
 
   const isDisabled = useMemo(() => {
     const ranges = blocked.map((b) => [Date.parse(b.start), Date.parse(b.end)]);
@@ -60,6 +64,12 @@ export function DatesPanel({
         return;
       }
     }
+    // Length rules are re-checked by the server; checking here skips a round trip.
+    const nights = nightsBetween(start, day);
+    if (nights < minNights || nights > maxNights) {
+      setError(nights < minNights ? `Minimum stay is ${minNights} nights.` : `Maximum stay is ${maxNights} nights.`);
+      return;
+    }
     setEnd(day);
     const from = start;
     startTransition(async () => {
@@ -78,7 +88,7 @@ export function DatesPanel({
 
   const picking = open && (!start || Boolean(end)) ? "departure" : open ? "return" : null;
   const calendar = (months: 1 | 2) => (
-    <Calendar month={month} months={months} onMonth={setMonth} start={start} end={end} isDisabled={isDisabled} onPick={pick} />
+    <Calendar month={month} months={months} onMonth={setMonth} start={start} end={end} isDisabled={isDisabled} onPick={pick} loading={pending ? end : null} />
   );
   const errorLine = error && <p className="t-caption3 mt-3 text-obsession-red">{error}</p>;
 

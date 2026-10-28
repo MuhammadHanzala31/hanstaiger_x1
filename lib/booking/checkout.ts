@@ -7,6 +7,8 @@ import { validateRange } from "@/lib/availability";
 import { loadYachtById, loadDraftRow, loadBlockedRanges } from "./db";
 import { getDraftId } from "./draft-cookie";
 import { buildLineItems } from "./checkout-core";
+import { shortDate } from "./stepValue";
+import { formatTotal } from "@/lib/money";
 
 export interface Customer {
   name: string;
@@ -85,9 +87,10 @@ export async function createCheckoutSession(customer: Customer): Promise<Checkou
         price_data: {
           currency: yacht.currency.toLowerCase(),
           unit_amount: snap.deposit,
+          // Spell out deposit vs total so the amount doesn't look like a different price.
           product_data: {
-            name: `Deposit · ${yacht.name}`,
-            description: `${draft.start_date} → ${draft.end_date} · ${draft.guests} guests`,
+            name: `${yacht.depositMode === "percent" ? `${yacht.depositValue}% deposit` : "Deposit"} · ${yacht.name}`,
+            description: `Total charter rate ${formatTotal(snap.total, yacht.currency)} · ${shortDate(draft.start_date)} → ${shortDate(draft.end_date)} · ${draft.guests} guests`,
           },
         },
       },

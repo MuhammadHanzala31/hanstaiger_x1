@@ -19,6 +19,7 @@ export function Calendar({
   end,
   isDisabled,
   onPick,
+  loading,
 }: {
   month: Date;
   months: 1 | 2;
@@ -27,10 +28,12 @@ export function Calendar({
   end: string | null;
   isDisabled: (day: string) => boolean;
   onPick: (day: string) => void;
+  /** Day whose range is being confirmed by the server; shows a spinner and locks the grid. */
+  loading?: string | null;
 }) {
   const shown = months === 2 ? [month, addMonths(month, 1)] : [month];
   return (
-    <div className={`grid gap-4 ${months === 2 ? "grid-cols-2" : ""}`}>
+    <div aria-busy={Boolean(loading)} className={`grid gap-4 ${months === 2 ? "grid-cols-2" : ""}`}>
       {shown.map((m, i) => (
         <div key={iso(m)}>
           <div className="relative h-[18px] text-center">
@@ -66,14 +69,18 @@ export function Calendar({
                   type="button"
                   aria-label={day}
                   aria-pressed={edge}
-                  disabled={disabled}
+                  disabled={disabled || Boolean(loading)}
                   onClick={() => onPick(day)}
                   className={`relative flex h-12 items-center justify-center text-[12px]/[16px] font-bold tracking-[0.2px] desk:h-[50px] ${
                     disabled ? "cursor-not-allowed text-grey-400" : edge ? "text-white" : "text-grey-900"
-                  }`}
+                  } ${loading ? "cursor-wait" : ""}`}
                 >
                   {(edge || inRange) && <span className={`absolute size-9 rounded-[2px] ${edge ? "bg-grey-900" : "bg-grey-50"}`} />}
-                  <span className="relative">{d.getUTCDate()}</span>
+                  {day === loading ? (
+                    <span role="status" aria-label="Checking availability" className="relative size-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                  ) : (
+                    <span className="relative">{d.getUTCDate()}</span>
+                  )}
                 </button>
               );
             })}

@@ -115,6 +115,8 @@ export function BookingWizard({
         blocked={blocked}
         seasonStart={yacht.seasonStart}
         seasonEnd={yacht.seasonEnd}
+        minNights={yacht.minNights}
+        maxNights={yacht.maxNights}
         onSelect={handleDates}
         onClear={clearDates}
         onContinue={() => go("guests")}
